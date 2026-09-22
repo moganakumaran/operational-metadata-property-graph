@@ -57,34 +57,34 @@ Reliability}
 \email{moganakumaran@ieee.org}
 \affil{\orgaddress{\city{San Francisco}, \state{CA}, \country{USA}}}
 
-\abstract{Reliability engineering on a data lakehouse asks questions that are
-graph traversals: which consumers a schema change breaks, why a table is stale,
+\abstract{Lakehouse reliability engineering asks questions that are graph
+traversals: which consumers a schema change breaks, why a table is stale,
 which upstream change preceded an incident, and who should be paged. The
-metadata needed to answer them is widely captured, so the interesting question
-is not whether it exists but whether what a system \emph{represents} and what
-its interface can \emph{ask} together suffice.
+metadata to answer them is widely captured, so the question is not whether it
+exists but whether what a system \emph{represents} and what it can be
+\emph{asked} suffice.
 
-We treat a reliability workload as a requirements instrument. We specify a
+We treat this workload as a requirements instrument, specifying a
 reference property graph for lakehouse operational metadata --- eleven node
 labels, thirteen stored relationship labels spanning fifteen typed endpoint
-signatures, and one derived dataset-dependency relation, with schema and
-lineage edges carrying both valid time and system time --- and define seven reliability queries formally, each reduced
-to the graph operations it needs. We validate the model by implementing it on
-an embedded property-graph engine over a synthetic lakehouse and executing all
-seven queries against expected results fixed in advance. We then assess six
-metadata systems under a stated rubric that separates representation from
-query expressiveness, deriving answerability from the two layers rather than
-judging it directly.
+signatures, and one derived dataset-dependency relation, with bitemporal schema and
+lineage edges --- and defining seven
+reliability queries formally, each reduced to the graph operations it needs. We
+validate it on an embedded property-graph engine over a synthetic lakehouse,
+executing all seven against expected results fixed in advance, then
+assess six metadata systems under a rubric separating representation from query
+expressiveness, deriving answerability from those layers rather than judging
+it directly.
 
-All seven queries execute and return the expected results. Among the six
-systems examined none answered more than three of the seven, and the binding
-constraint differed by system: Apache Atlas is limited by a query interface
-with no traversal construct despite storing its graph in a graph database,
-whereas Unity Catalog exposes the required query operations through recursive
-SQL, but several workload-specific metadata elements are absent or only
-partially represented. Per-hop latency, which freshness propagation requires,
-was represented by none. Separating the two layers is what makes
-these gaps actionable.}
+All seven execute and return the expected results. None of the six
+systems answered more than three of the seven, and the binding constraint
+differed by system: Apache Atlas is limited by a query interface with no
+traversal construct despite storing its graph in a graph database, whereas
+Unity Catalog exposes the required query operations through recursive SQL,
+though several workload-specific metadata elements are absent or only partially
+represented. Per-hop latency, which freshness propagation needs, was
+represented by none. Separating the two layers is what makes the gaps
+actionable.}
 
 \keywords{Property graphs, Data lineage, Metadata management, Lakehouse,
 Temporal graphs, Data reliability}
@@ -834,7 +834,7 @@ check, and table-scoped, with no column-level checks. Nothing corresponds to
 change moves Q3 and Q7 from \rn\ to \rp\ by Eq.~(\ref{eq:answer}). We did not
 touch those verdicts; the derivation did.
 
-On run history our earlier wording was too strong. No join between
+Run history is \rp\ for a subtler reason. No join between
 \texttt{job\_run\_timeline} and the lineage tables is documented --- the
 documented joins are to \texttt{lakeflow.jobs}, \texttt{billing.usage} and
 \texttt{compute.clusters} on \texttt{workspace\_id}, \texttt{job\_id} and
@@ -979,17 +979,31 @@ can be \emph{operationally queried}: among the six examined, the binding
 constraint was expressiveness for some and representation for others, and none
 answered more than three of the seven.
 
-\paragraph{Future work and reproducibility.} A workload derived from a real
+\paragraph{Future work.} A workload derived from a real
 incident corpus would let the queries be weighted by how often they are asked;
 beyond that, a scalability benchmark on catalog-sized graphs, incremental
 maintenance of the derived dependency relation under continuous ingestion, and
 integration with observability systems that already hold the run-delay data Q4
 needs. Whether agents can be trusted to run such queries and act on the results
 during an incident is a further question this paper does not address. The
-reference model, synthetic graph, all seven queries, the validation runner and
-the capability matrix with per-cell evidence \emph{will be made publicly
-available with the final version}; the capability table is generated from
-that data rather than transcribed.
+capability table reported here is generated from the per-cell evidence rather
+than transcribed; its availability is stated in the Declarations.
+
+% =====================================================================
+\backmatter
+
+\section*{Declarations}
+
+\paragraph{Competing interests.} The author has no competing interests to
+declare that are relevant to the content of this article.
+
+\paragraph{Funding.} No funding was received for conducting this study.
+
+\paragraph{Data availability.} The reference model, the synthetic lakehouse
+graph, all seven queries, the validation runner and the capability matrix with
+its per-cell evidence will be made publicly available with the final version of
+this article. The running example is synthetic: no operational data, system
+names or incidents from any organisation appear in this work.
 
 \bibliography{references}
 

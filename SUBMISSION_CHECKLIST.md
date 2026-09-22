@@ -1,10 +1,12 @@
 # Submission checklist — Datenbank-Spektrum
 
-Status as of **21 September 2026**, after the journal-strengthening revision
-recorded in `REVISION_REPORT.md`. Deadline **1 October 2026**.
+Status as of **22 September 2026**, after the Springer submission-guideline
+compliance pass recorded below. Deadline **1 October 2026**.
 
-**Note on length — 12 pages against an 8–10 limit.** The cut pass took the
-paper from 15 to 12. What moved it, measured rather than estimated:
+**Note on length — 14 pages against an 8–10 limit.** An earlier cut pass took
+the paper from 15 to 12; the technical revision, the `via_pipeline`
+formalisation and the mandatory Declarations section have since taken it to
+14. The cut pass measured: What moved it, measured rather than estimated:
 
 | | |
 |---|---|
@@ -16,13 +18,13 @@ Everything protected survived: all seven formal query specifications, the
 Y/P/N/S rubric, all five threat categories, both temporal definitions, the
 executable validation and every capability finding.
 
-**The remaining two pages would have to come from protected material.** At
+**The remaining pages would have to come from protected material.** At
 roughly 500 words per page, closing the gap means ~1,000 more words, and the
 only blocks left that large are the Threats section, the rubric, and the formal
 query semantics. The structural alternatives each buy one page and cost
 something load-bearing: Figure 1, or the edge table.
 
-So the options are: submit at 12 and say why in the cover letter; ask the guest
+So the options are: submit at 14 and say why in the cover letter; ask the guest
 editors whether a Schwerpunktbeitrag carrying an artefact may run long; or
 decide which protected item goes. `check.py` encodes the venue's 8–10 rule and
 currently **fails that one gate**, deliberately — the gap stays visible rather
@@ -34,18 +36,24 @@ inside the limit and none of the remaining decision is needed.
 
 Re-run everything with `python3 check.py` (exit 0 = all gates pass).
 
-## Gates — all passing
+## Gates — 14 of 15 passing
 
 ```
 [PASS] compile                          tectonic, no errors
 [PASS] no large overfull boxes
 [PASS] bibtex clean                     0 warnings
 [PASS] citations resolved               0 occurrences of "[?]" in the PDF
-[FAIL] pages in [8,10]                  12 pages  <-- the open item
+[FAIL] pages in [8,10]                  14 pages  <-- the open item
 [PASS] reference queries execute        7/7 executable and matching expected
 [PASS] generated tables current         spliced tables match the evidence JSON
 [PASS] manuscript self-consistent       36 checks, 0 failures
-[PASS] references verified              23 verified, 22 web, 0 to check
+[PASS] model consistent (endpoints)     figure/table/schema agree; no orphans
+[PASS] anonymous version current/clean  paper_anon.tex regenerates identically
+[PASS] anonymous PDF builds, no leak    0 identifying strings, no /Author
+[PASS] abstract in [150,250] words      247 words
+[PASS] declarations present in the PDF  Competing interests, Funding, Data av.
+[PASS] scholarly references carry DOIs  18/23, 5 known DOI-less venues
+[PASS] references verified              23 verified, 6 web, 0 to check
 ```
 
 A review pass (see `REVISION_REPORT.md` §13) re-derived the Q4 result
@@ -64,10 +72,11 @@ follows from the computed matrix.
 
 | Check | Result | Bar |
 |---|---|---|
-| Page count, `sn-jnl [iicol]` | **12** | CfP says 8–10 — see note above |
-| Prose (body only) | 4,575 words | — |
+| Page count, `sn-jnl [iicol]` | **14** | CfP says 8–10 — see note above |
+| Abstract | **247 words** | Springer requires 150–250 |
 | References | 23 indexed + 6 organisational = 29 | all cited; no URL dropped |
-| Executable validation | **7/7 queries match** | Kùzu 0.11.3, 44 nodes / 65 edges |
+| — carrying a DOI | 18 of 23 scholarly | 5 venues register none |
+| Executable validation | **7/7 queries match** | Kùzu 0.11.3, 45 nodes / 64 edges |
 | Capability cells | 90, all with a citation key | generator rejects cells without one |
 | AI-writing heuristic | **~14.1%, "Low — likely human"** | <20% |
 | — flagged sentences | 0 of 202 | — |
@@ -138,6 +147,46 @@ because OpenAlex rate-limits a 36-entry run and made consecutive runs disagree.
 - Author block carries no employer: name, city, and an IEEE email, matching the
   prior papers.
 
+## Springer submission-guideline compliance
+
+Audited 22 September 2026 against
+`link.springer.com/journal/13222/submission-guidelines`. The page 303-redirects
+through `idp.springer.com`; its content is reachable via the
+`?error=cookies_not_supported` variant.
+
+Three requirements were **not met** and are now fixed, each with a gate:
+
+| Requirement (the guidelines' words) | Was | Now |
+|---|---|---|
+| Declarations incl. Competing Interests; *"submissions that do not include relevant declarations will be returned as incomplete"* | **absent entirely** | Declarations section with Competing interests, Funding, Data availability |
+| Abstract *"150 to 250 words"* | **273 words** | **247** |
+| *"always include DOIs as full DOI links"* | 5 of 23 scholarly entries | **18 of 23**; the other 5 are CIDR ×2, MLSys, DBPL and BTW, which register no DOIs |
+
+Already compliant, confirmed rather than assumed: the `[iicol]` class option;
+a single self-contained `.tex`; numbered `[N]` citations and
+`https://doi.org/` -style DOI rendering, both from `sn-basic.bst`; English
+("The journal language is German. However, manuscripts written in English are
+also welcome."); TikZ figures, so the EPS/TIFF resolution rules do not apply.
+
+**On blinding: the guidelines are silent.** They state no review model and
+impose no anonymisation requirement. So `paper_anon.pdf` is insurance, not an
+obligation — the Editorial Manager form decides whether it is wanted. The
+anonymisation itself was re-audited and is clean: no author, e-mail or
+affiliation; no `/Author` in the PDF metadata; no acknowledgements or funding
+text; and **no self-citations at all** in `references.bib`, so there is
+nothing to third-person.
+
+**On AI assistance: no declaration, decided 22 September 2026.** The policy
+requires LLM use to be "properly documented in the Methods section" but exempts
+*"AI assisted copy editing"* — "AI-assisted improvements to human-generated
+texts for readability and style" — which is the characterisation relied on
+here. Recorded as a decision so it does not read later as an oversight.
+
+One defect surfaced by the same sweep and fixed: a paragraph in Sect. 6.3
+opened *"On run history our earlier wording was too strong"* — revision-log
+commentary about a draft no reader has seen, spliced into the manuscript. It
+now states the finding directly.
+
 ## Still to do before submitting
 
 **0. Settle the length question first** (see the note at the top) — it decides
@@ -156,15 +205,19 @@ excluded the paper already fits.
    `make_anon.py` and must never be hand-edited; `check.py` fails if it goes
    stale or if either the source or the PDF carries an identifying string.
 
-   Note: the CfP does not state that review is double-blind, and Springer
-   journal review is often single-blind, so the blinded version may not be
-   required. Check the Editorial Manager submission form before choosing.
-4. **Upload source, not just PDF.** Springer requires editable sources:
-   `paper.tex`, `references.bib`, `sn-jnl.cls`, `sn-basic.bst`. Springer also
+   Note: **neither the CfP nor the Springer submission guidelines state that
+   review is blinded**, and Springer journal review is often single-blind, so
+   the blinded version may well not be wanted. Check the Editorial Manager
+   submission form before choosing.
+4. **Upload source, not just PDF.** *"Failing to submit a complete set of
+   editable source files will result in your article not being considered for
+   review"*: `paper.tex`, `references.bib`, `sn-jnl.cls`, `sn-basic.bst`, and
+   the compiled PDF. Springer also
    requires a **single** `.tex` — satisfied: the evidence tables are spliced
    into `paper.tex` by the generator rather than `\input`.
-5. Decide whether to state AI-assistance in the cover letter, consistent with
-   how the other submissions handled it.
+5. ~~Decide the AI-assistance disclosure.~~ **Decided 22 September 2026: no
+   declaration**, relying on the guidelines' copy-editing exemption. See the
+   compliance section above.
 6. **Flip the artefact repo public** if it is to be cited in the submission:
    `gh repo edit moganakumaran/operational-metadata-property-graph
    --visibility public`. It is private now because the paper is unsubmitted.
@@ -174,11 +227,12 @@ excluded the paper already fits.
 | File | What it is |
 |---|---|
 | `paper.tex` | the manuscript, single file per Springer's requirement |
-| `references.bib` | 45 entries, all cited and verified |
+| `references.bib` | 29 entries (23 scholarly + 6 organisational), all cited and verified |
 | `paper.pdf` | named build, 14 pages |
 | `paper_anon.tex`, `paper_anon.pdf` | blinded build, generated by `make_anon.py`; do not hand-edit |
-| `check.py` | all nine gates; exit 0 = submittable |
-| `consistency.py` | 32 manuscript-vs-artefact checks |
+| `check.py` | all 15 gates; exit 0 = submittable |
+| `consistency.py` | 36 manuscript-vs-artefact checks |
+| `backfill_dois.py` | finds a DOI per reference; accepts only on title+year+author agreement |
 | `evaluation/` | reference implementation, 7 queries, capability matrix, table generator — see its `README.md` |
 | `REVISION_AUDIT.md` | pre-revision defect audit |
 | `REVISION_REPORT.md` | what the revision changed, with old → new classifications |

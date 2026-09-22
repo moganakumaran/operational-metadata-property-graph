@@ -15,6 +15,13 @@ this paper:
                element left unexercised by any query
   anon         paper_anon.tex is current, and neither it nor its PDF carries
                an identifying string
+  abstract     150-250 words, which Springer's DASP guidelines require
+  declarations Competing Interests, Funding and Data Availability must all
+               appear -- the guidelines say a submission without the relevant
+               declarations "will be returned as incomplete"
+  dois         the guidelines say to "always include DOIs as full DOI links";
+               sn-basic.bst already renders the link, so this gates coverage,
+               with a named exception per venue that registers no DOIs
   refs         verify_refs.py: every reference confirmed against a live index
   independence 8-gram similarity against the author's prior papers, which the
                venue plan requires to be near zero
@@ -41,6 +48,18 @@ PDF = os.path.join(HERE, "paper.pdf")
 # widened away. A lower bound is included so that silently losing a section
 # fails too.
 MIN_PAGES, MAX_PAGES = 8, 10
+# Springer DASP: "The abstract should be 150 to 250 words."
+MIN_ABSTRACT, MAX_ABSTRACT = 150, 250
+# Scholarly references legitimately without a DOI, each because the venue
+# registers none. Named individually so that a NEW reference without a DOI
+# fails the gate instead of hiding behind a blanket tolerance.
+NO_DOI_VENUE = {
+    "armbrust2021lakehouse": "CIDR",
+    "hellerstein2017ground": "CIDR",
+    "breck2019validation": "MLSys",
+    "scherzinger2013nosql": "DBPL",
+    "klettke2015schema": "BTW / GI-LNI",
+}
 VENV = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".venv",
                     "bin", "python")
 
@@ -143,6 +162,54 @@ def main() -> int:
     results.append(gate("anonymous PDF builds with no identifying text",
                         not anon_errs and os.path.exists(anon_pdf) and leak == 0,
                         f"{leak} identifying string(s)" if leak else ""))
+
+    # Springer requires a 150-250 word abstract. Counted from the source so
+    # the failure names a number to cut to, not just "too long".
+    tex = open(PAPER, encoding="utf-8").read()
+    i = tex.index(r"\abstract{")
+    depth = 0
+    for k in range(i + len(r"\abstract"), len(tex)):
+        depth += (tex[k] == "{") - (tex[k] == "}")
+        if depth == 0:
+            abs_end = k
+            break
+    body = tex[i + len(r"\abstract") + 1:abs_end]
+    body = re.sub(r"\\[a-zA-Z]+\*?", "", body)
+    body = re.sub(r"[{}~$\\]", " ", body)
+    n_abs = len([w for w in body.split() if re.search(r"[A-Za-z0-9]", w)])
+    results.append(gate(f"abstract in [{MIN_ABSTRACT},{MAX_ABSTRACT}] words",
+                        MIN_ABSTRACT <= n_abs <= MAX_ABSTRACT, f"{n_abs} words"))
+
+    # "Submissions that do not include relevant declarations will be returned
+    # as incomplete." Checked on the rendered text, not the source, because
+    # what matters is that an editor can see them.
+    # The three declaration names are what carry this gate. Negative-testing
+    # showed why both halves of that sentence matter: checking only for
+    # "competing interests" passes on the sentence *body* of the declaration
+    # rather than its heading, while "Declarations" alone passes on Sect. 8's
+    # cross-reference to it even with the whole section deleted.
+    required = ("Declarations", "Competing interests", "Funding",
+                "Data availability")
+    missing = [d for d in required if d.lower() not in txt.lower()]
+    results.append(gate("declarations present in the PDF", not missing,
+                        f"missing: {', '.join(missing)}" if missing else
+                        ", ".join(required)))
+
+    # DOI coverage. sn-basic.bst renders `doi` as a full https://doi.org link,
+    # so this gates the field being there at all.
+    from verify_refs import parse_bib
+    scholarly = [e for e in parse_bib(os.path.join(HERE, "references.bib"))
+                 if e["kind"] != "misc"]
+    no_doi = {e["key"] for e in scholarly if not e["fields"].get("doi")}
+    unexpected = sorted(no_doi - set(NO_DOI_VENUE))
+    stale = sorted(set(NO_DOI_VENUE) - no_doi)   # exception no longer needed
+    results.append(gate("scholarly references carry DOIs",
+                        not unexpected and not stale,
+                        (f"no DOI and no recorded exception: {unexpected}; "
+                         if unexpected else "")
+                        + (f"stale exceptions: {stale}" if stale else
+                           f"{len(scholarly) - len(no_doi)}/{len(scholarly)}, "
+                           f"{len(no_doi)} known DOI-less venues")))
 
     if not args.skip_refs:
         r = run([sys.executable, "-u", "verify_refs.py"])

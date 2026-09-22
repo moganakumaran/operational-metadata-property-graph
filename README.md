@@ -44,6 +44,7 @@ answerability rule does not apply to it.
 | `consistency.py` | checks tying the manuscript to its artefacts |
 | `evaluation/test_model_consistency.py` | endpoint-level figure/table/schema agreement, orphan detection, `via_pipeline` witness validity |
 | `verify_refs.py` | reference verification against OpenAlex and Crossref |
+| `backfill_dois.py` | finds a DOI for each reference lacking one; writes nothing unless title, year and first author all agree |
 | `SCOPE.md` | venue facts and format findings |
 | `GAP_ANALYSIS.md` | first-pass research notes behind the capability assessment |
 | `REVISION_AUDIT.md`, `REVISION_REPORT.md` | pre-revision defect audit, and what the revision changed |
@@ -84,6 +85,14 @@ The mechanisms matter more than the results, and are reusable:
 - **Expected results are fixed before the run.** `run_validation.py` holds the
   answer for each query; printing whatever the engine returned would show only
   that a query parsed.
+- **A DOI is never taken from a search ranking.** Springer asks for DOIs as
+  full links, and the obvious way to supply them — accept Crossref's top hit —
+  is how this project previously acquired two wrong references. `backfill_dois.py`
+  requires title, year *and* first-author surname to agree before it writes,
+  and on its first run that rule rejected a candidate offering the *European
+  Ground Motion Service* in place of Hellerstein's *Ground*. Five references
+  keep no DOI because CIDR, MLSys, DBPL and BTW register none; each is named
+  in `check.py` rather than tolerated by a blanket exception.
 - **`consistency.py` pins prose to data** — figure edges against the edge table
   against the executed schema, the stated path count against the enumeration
   the run produced, and the "no more than three of seven" claim against the

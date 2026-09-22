@@ -1,50 +1,33 @@
-45 entries in references.bib
+29 entries in references.bib
 
 OK   armbrust2021lakehouse  [openalex 1.00] 2021  Conference on Innovative Data Systems Resear
 OK   armbrust2020delta  [doi 10.14778/3415478.3415560] 2020  Proceedings of the VLDB Endowment
-OK   green2007semirings  [openalex 1.00] 2007  
-OK   amsterdamer2011aggregate  [openalex 1.00] 2011  
-OK   cheney2009provenance  [openalex 1.00] 2009  Foundations and Trends in Databases
-OK   buneman2001whywhere  [openalex 1.00] 2001  Lecture notes in computer science
-OK   herschel2017survey  [openalex 1.00] 2017  The VLDB Journal
-OK   angles2017foundations  [openalex 1.00] 2017  ACM Computing Surveys
+OK   green2007semirings  [doi 10.1145/1265530.1265535] 2007  Proceedings of the twenty-sixth ACM SIGM
+OK   amsterdamer2011aggregate  [doi 10.1145/1989284.1989302] 2011  Proceedings of the thirtieth ACM SIGMOD-
+OK   cheney2009provenance  [doi 10.1561/1900000006] 2009  Foundations and Trends in Databases
+OK   buneman2001whywhere  [doi 10.1007/3-540-44503-x_20] 2001  Lecture Notes in Computer Science Databa
+OK   herschel2017survey  [doi 10.1007/s00778-017-0486-1] 2017  The VLDB Journal
+OK   angles2017foundations  [doi 10.1145/3104031] 2017  ACM Computing Surveys
 OK   francis2018cypher  [doi 10.1145/3183713.3190657] 2018  Proceedings of the 2018 International Co
-OK   deutsch2022gql  [openalex 1.00] 2022  Proceedings of the 2022 International Confer
-OK   debrouvier2021temporal  [openalex 1.00] 2021  The VLDB Journal
+OK   deutsch2022gql  [doi 10.1145/3514221.3526057] 2022  Proceedings of the 2022 International Co
+OK   debrouvier2021temporal  [doi 10.1007/s00778-021-00675-4] 2021  The VLDB Journal
 OK   rost2021gradoop  [doi 10.1007/s00778-021-00667-4] 2021  The VLDB Journal
-OK   kulkarni2012temporal  [openalex 1.00] 2012  ACM SIGMOD Record
+OK   kulkarni2012temporal  [doi 10.1145/2380776.2380786] 2012  ACM SIGMOD Record
 OK   halevy2016goods  [doi 10.1145/2882903.2903730] 2016  Proceedings of the 2016 International Co
 OK   hellerstein2017ground  [openalex 1.00] 2017  Conference on Innovative Data Systems Resear
-OK   schelter2018deequ  [openalex 1.00] 2018  Proceedings of the VLDB Endowment
+OK   schelter2018deequ  [doi 10.14778/3229863.3229867] 2018  Proceedings of the VLDB Endowment
 OK   breck2019validation  [openalex 1.00] 2019  
-OK   polyzotis2017challenges  [openalex 1.00] 2017  
+OK   polyzotis2017challenges  [doi 10.1145/3035918.3054782] 2017  Proceedings of the 2017 ACM Internationa
 OK   scherzinger2013nosql  [openalex 1.00] 2013  arXiv (Cornell University)
 OK   klettke2015schema  [openalex 1.00] 2015  BTW
 OK   klettke2016migration  [doi 10.1109/BigData.2016.7840924] 2016  2016 IEEE International Conference on Bi
-OK   acosta2013crowdsourcing  [openalex 1.00] 2013  Lecture notes in computer science
-OK   hogan2021knowledge  [openalex 1.00] 2021  ACM Computing Surveys
-WEB  openlineage
-WEB  openlineagecolumn
-WEB  atlastypes
-WEB  atlassearch
-WEB  atlashook
-WEB  atlasaudit
-WEB! atlasgrammar   <-- no access date in note
-WEB! atlassource   <-- no access date in note
-WEB  datahubmodel
-WEB  datahubassertion
-WEB  datahubgraphql
-WEB  openmetadatalineage
-WEB  openmetadataversioning
-WEB  openmetadatasearch
-WEB  egerialineage
-WEB  egeriaeffectivity
-WEB! egeriasource   <-- no access date in note
-WEB  unitycatalog
-WEB  ucsystemtables
-WEB  ucrecursive
-WEB  ucjobs
-WEB  ucinfoschema
+OK   acosta2013crowdsourcing  [doi 10.1007/978-3-642-41338-4_17] 2013  Lecture Notes in Computer Science Advanc
+OK   hogan2021knowledge  [doi 10.1145/3447772] 2021  ACM Computing Surveys
+WEB  olspec
+WEB  atlasdocs
+WEB  datahubdocs
+WEB  omdocs
+WEB  egeriadocs
+WEB  dbxdocs
 
-23 verified, 22 web, 0 to check
-  web entries missing an access date: atlasgrammar, atlassource, egeriasource
+23 verified, 6 web, 0 to check
