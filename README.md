@@ -20,13 +20,16 @@ together suffice. The paper uses a seven-query reliability workload as a
 requirements instrument, and assesses six metadata systems on those two axes
 separately.
 
-Main findings: field-level lineage is comparatively mature; among the six
-examined none answered more than three of the seven and three answered none;
-the binding constraint differs by system — Apache Atlas is limited by a query
-interface with no traversal construct despite storing its graph in a graph
-database, while Unity Catalog can express every required operation in recursive
-SQL but lacks the metadata to feed it; and per-hop latency, which freshness
-propagation needs, is represented by none of them.
+Main findings: field-level lineage is comparatively mature; no system answered
+more than three of the seven; the binding constraint differs by system — Apache
+Atlas is limited by a query interface with no traversal construct despite
+storing its graph in a graph database, while Unity Catalog exposes all six
+query-operation classes through recursive SQL but several workload-specific
+metadata elements are absent or only partially represented; and per-hop
+latency, which freshness propagation needs, is represented by none of them.
+
+OpenLineage receives no workload verdict: it defines no query layer, so the
+answerability rule does not apply to it.
 
 ## Layout
 
@@ -38,7 +41,8 @@ propagation needs, is represented by none of them.
 | `make_anon.py` | generates the blinded manuscript and refuses to write if any identifying string survives |
 | `evaluation/` | executable reference implementation and the capability assessment data — see its own `README.md` |
 | `check.py` | all submission gates; exit 0 = submittable |
-| `consistency.py` | 36 checks tying the manuscript to its artefacts |
+| `consistency.py` | checks tying the manuscript to its artefacts |
+| `evaluation/test_model_consistency.py` | endpoint-level figure/table/schema agreement, orphan detection, `via_pipeline` witness validity |
 | `verify_refs.py` | reference verification against OpenAlex and Crossref |
 | `SCOPE.md` | venue facts and format findings |
 | `GAP_ANALYSIS.md` | first-pass research notes behind the capability assessment |
@@ -106,3 +110,6 @@ incidents from any organisation appear in this repository.
 ## Author
 
 Mogana Kumaran Sivaraman — moganakumaran@ieee.org
+
+(The blinded build `paper_anon.pdf` carries no author or affiliation; see
+`make_anon.py`.)
