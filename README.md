@@ -33,7 +33,9 @@ propagation needs, is represented by none of them.
 | Path | What it is |
 |---|---|
 | `paper.tex`, `references.bib` | the manuscript (single file, as Springer requires) |
-| `paper.pdf` | current build |
+| `paper.pdf` | current build, named |
+| `paper_anon.tex`, `paper_anon.pdf` | blinded build for anonymous review, **generated** by `make_anon.py` from `paper.tex` — never hand-edit |
+| `make_anon.py` | generates the blinded manuscript and refuses to write if any identifying string survives |
 | `evaluation/` | executable reference implementation and the capability assessment data — see its own `README.md` |
 | `check.py` | all submission gates; exit 0 = submittable |
 | `consistency.py` | 36 checks tying the manuscript to its artefacts |

@@ -13,6 +13,8 @@ this paper:
   pages        8-10 required by the CfP, measured on the PDF
   model        endpoint-level figure/table/schema agreement, and no model
                element left unexercised by any query
+  anon         paper_anon.tex is current, and neither it nor its PDF carries
+               an identifying string
   refs         verify_refs.py: every reference confirmed against a live index
   independence 8-gram similarity against the author's prior papers, which the
                venue plan requires to be near zero
@@ -118,6 +120,29 @@ def main() -> int:
     tail = [l for l in r.stdout.splitlines() if "failure" in l]
     results.append(gate("model consistent (endpoints, orphans)",
                         r.returncode == 0, tail[-1] if tail else ""))
+
+    # The blinded manuscript is generated, so it can go stale silently. This
+    # also re-scans it for identifying strings, which is the failure that
+    # actually matters: a leak reaches the reviewers.
+    r = run([sys.executable, "make_anon.py", "--check"])
+    results.append(gate("anonymous version current and clean",
+                        r.returncode == 0,
+                        r.stdout.strip().splitlines()[-1] if r.stdout else ""))
+
+    # Build it too, so a blinded PDF that does not compile cannot ship.
+    r = run(["tectonic", "-X", "compile", "paper_anon.tex"])
+    anon_errs = [l for l in (r.stdout + r.stderr).splitlines()
+                 if l.startswith("error")]
+    anon_pdf = os.path.join(HERE, "paper_anon.pdf")
+    leak = 0
+    if os.path.exists(anon_pdf):
+        atxt = run(["pdftotext", "-nopgbrk", "paper_anon.pdf", "-"]).stdout
+        leak = sum(atxt.lower().count(t.lower())
+                   for t in ("sivaraman", "mogana", "ieee.org",
+                             "san francisco"))
+    results.append(gate("anonymous PDF builds with no identifying text",
+                        not anon_errs and os.path.exists(anon_pdf) and leak == 0,
+                        f"{leak} identifying string(s)" if leak else ""))
 
     if not args.skip_refs:
         r = run([sys.executable, "-u", "verify_refs.py"])
