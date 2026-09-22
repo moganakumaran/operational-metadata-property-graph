@@ -140,6 +140,11 @@ because OpenAlex rate-limits a 36-entry run and made consecutive runs disagree.
 
 ## Still to do before submitting
 
+**0. Settle the length question first** (see the note at the top) — it decides
+whether anything else changes. Cheapest first move: ask the guest editors
+whether references count toward the 8–10 pages. They are 2.5 pages here, so if
+excluded the paper already fits.
+
 1. **Read the paper end to end on screen.** Every automated gate passes; none
    of them judges whether the argument reads well.
 2. **Editorial Manager**: account at editorialmanager.com/dasp, category
@@ -149,10 +154,11 @@ because OpenAlex rate-limits a 36-entry run and made consecutive runs disagree.
    `paper.tex`, `references.bib`, `sn-jnl.cls`, `sn-basic.bst`. Springer also
    requires a **single** `.tex` — satisfied: the evidence tables are spliced
    into `paper.tex` by the generator rather than `\input`.
-5. **Decide the length question** in the note at the top of this file before
-   anything else; it determines whether the evaluation section ships.
 4. Decide whether to state AI-assistance in the cover letter, consistent with
    how the other submissions handled it.
+5. **Flip the artefact repo public** if it is to be cited in the submission:
+   `gh repo edit moganakumaran/operational-metadata-property-graph
+   --visibility public`. It is private now because the paper is unsubmitted.
 
 ## Files
 
