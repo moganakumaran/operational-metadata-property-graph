@@ -80,9 +80,10 @@ All seven queries execute and return the expected results. Among the six
 systems examined none answered more than three of the seven, and the binding
 constraint differed by system: Apache Atlas is limited by a query interface
 with no traversal construct despite storing its graph in a graph database,
-whereas Unity Catalog can express every required operation in recursive SQL but
-lacks the metadata to feed it. Per-hop latency, which freshness propagation
-requires, was represented by none. Separating the two layers is what makes
+whereas Unity Catalog exposes the required query operations through recursive
+SQL, but several workload-specific metadata elements are absent or only
+partially represented. Per-hop latency, which freshness propagation requires,
+was represented by none. Separating the two layers is what makes
 these gaps actionable.}
 
 \keywords{Property graphs, Data lineage, Metadata management, Lakehouse,
@@ -243,9 +244,9 @@ labels abbreviated: \nd{D}ataset,
 signatures: \eg{asserts\_on} and \eg{owns} each admit two endpoint pairs and
 are listed once per pair. $\dagger$ marks the two bitemporal relationships,
 which carry \texttt{valid\_from}, \texttt{valid\_to},
-\texttt{recorded\_from} and \texttt{recorded\_to}. \eg{feeds} is a
-\emph{derived} dependency relation and is not stored
-(Sect.~\ref{sec:derived}). Every signature here appears in
+\texttt{recorded\_from} and \texttt{recorded\_to}. \eg{feeds} is a \emph{derived} dependency relation and
+is not stored; its \texttt{via\_pipeline} property identifies the \nd{Pipeline}
+witnessing the dependency (Sect.~\ref{sec:derived}). Every signature here appears in
 Fig.~\ref{fig:model}, and none is absent from it.}
 \label{tab:edges}
 \scriptsize
@@ -270,7 +271,7 @@ Edge & From $\rightarrow$ To & Properties \\
 \eg{affects}                & I $\rightarrow$ D   & \\
 \midrule
 \eg{feeds} \emph{(deriv.)}  & D $\rightarrow$ D   &
-   \texttt{latency\_} \texttt{minutes} \\
+   \texttt{via\_} \texttt{pipeline}, \texttt{latency\_} \texttt{minutes} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -335,21 +336,35 @@ whether it represents them.
 
 Q3, Q4, Q5 and Q7 traverse dataset-to-dataset dependency, which the model does
 \emph{not} store as a primitive. Storing it would duplicate \eg{reads} and
-\eg{writes} and could drift from them. We define it instead as a derived
-relation:
+\eg{writes} and could drift from them. We derive one edge per \emph{witness}
+pipeline: for every $p$ reading $d_1$ and writing $d_2$ there is a derived
+edge $e$, written $d_1 \xrightarrow{\ \text{feeds}[p]\ } d_2$, such that
 \begin{equation}
 \begin{split}
-d_1 \xrightarrow{\ \text{feeds}\ } d_2 \iff
-  \exists\, p \in \nd{Pipeline} : \\
+d_1 \xrightarrow{\ \text{feeds}[p]\ } d_2 \iff
+  p \in \nd{Pipeline}\ \wedge \\
 p \xrightarrow{\text{reads}} d_1 \ \wedge\
 p \xrightarrow{\text{writes}} d_2
 \end{split}
 \label{eq:feeds}
 \end{equation}
 
-and attribute to each hop a latency. Of the available readings --- expected
-processing time, observed run delay, SLA lag, dataset freshness --- we commit
-to one:
+The bracketed $p$ is not a third endpoint: \eg{feeds} stays an ordinary
+\nd{Dataset} $\rightarrow$ \nd{Dataset} edge and $p$ is kept as an edge
+\emph{property},
+\begin{equation}
+\mathrm{via\_pipeline}(e) := p ,
+\label{eq:via}
+\end{equation}
+recording which pipeline witnessed the dependency. That is what lets Q5
+recover the intermediate \nd{Pipeline}: the rest of the workload needs only
+dataset-to-dataset dependency, but ownership attaches to datasets \emph{and}
+pipelines, so Q5 alone must reconstruct the node Eq.~(\ref{eq:feeds})
+otherwise hides.
+
+Each derived edge also carries a latency. Of the available readings ---
+expected processing time, observed run delay, SLA lag, dataset freshness ---
+we commit to one:
 
 \begin{equation}
 \mathrm{latency}(e) := \mathrm{delay}\big(r^{*}_{p(e)}\big)
@@ -360,15 +375,16 @@ to one:
 \label{eq:delay}
 \end{equation}
 
-for a hop $e$ produced by pipeline $p(e)$, with $r^{*}_{p}$ the most recent
-\textsc{success}ful \nd{Run} of $p$. Hop latency is thus the \emph{observed
+for a hop $e$ whose witness is $\mathrm{via\_pipeline}(e) = p$, with
+$r^{*}_{p}$ the most recent \textsc{success}ful \nd{Run} of $p$. Latency and
+witness therefore refer to the same pipeline by construction. Hop latency is thus the \emph{observed
 delay, against schedule, of the run that materialised the downstream dataset}
 --- observable, already in the model via \nd{Run}, and what an operator means
 by how much lateness a hop contributes.
 
 That it must be computed before it can be traversed is part of what makes Q4
-demanding in practice, and Sect.~\ref{sec:capability} reports that none of the
-systems examined represents an equivalent quantity.
+demanding, and Sect.~\ref{sec:capability} reports that none of the systems
+examined represents an equivalent quantity.
 
 \paragraph{Running example.} A synthetic retail lakehouse:
 \texttt{orders\_raw} and \texttt{fx\_rates} are ingested hourly;
@@ -544,14 +560,17 @@ ownership resolvable in-graph over two node kinds.
 This is the one query that needs the intermediate \nd{Pipeline}, and it is why
 the \eg{owns}\,:\,\nd{Principal} $\rightarrow$ \nd{Pipeline} signature is in
 the model at all. Q1, Q3, Q4 and Q7 are content with \eg{feeds}; Q5 recovers
-the alternating path by expanding each \eg{feeds} hop back through
-\texttt{via\_pipeline}, which Eq.~(\ref{eq:feeds}) records, since no engine in
-common use offers variable-length traversal over a composite pattern.
+the alternating path by expanding each \eg{feeds} hop back through its witness
+$\mathrm{via\_pipeline}$, Eq.~(\ref{eq:via}), since no engine in common use
+offers variable-length traversal over a composite pattern.
 
 \paragraph{Q6 Change attribution.}
-\emph{In:} incident time $t$, belief time $b$. \emph{Out:} for each
-\nd{SchemaVersion} of the affected dataset, whether it satisfied
-(\ref{eq:valid}) at $t$ and whether it satisfied (\ref{eq:tx}) at $b$.
+\emph{In:} a dataset $d$, incident time $t$, belief time $b$. \emph{Out:} for
+each \nd{SchemaVersion} of $d$, whether it satisfied (\ref{eq:valid}) at $t$
+and whether it satisfied (\ref{eq:tx}) at $b$. In the worked example $d$ is an
+\emph{upstream} dataset surfaced by Q3 rather than the incident dataset
+itself, which is the usual shape of an investigation: Q3 narrows the
+candidates, Q6 attributes the change on one of them.
 \emph{Requires:} two independent temporal dimensions on one edge; where they
 disagree, the disagreement is the finding.
 
@@ -676,8 +695,8 @@ upstream dataset and four distinct \eg{feeds} paths into
 
 Porting notes: Kuzu has no \texttt{reduce}, so the path-local fold is
 \texttt{list\_sum(list\_transform(...))}, and an \texttt{UNWIND}ed node cannot
-be rebound as a pattern, so Q5 resolves ownership by primary key. Neither
-changes the operations required.
+be rebound as a pattern, so Q5 resolves ownership by key. Neither changes the
+operations required.
 
 \subsection{Query validation (RQ4)}\label{sec:validation}
 
@@ -799,8 +818,9 @@ closure and reverse traversal by choice of join direction, a path-local fold
 because a recursive CTE carries columns forward on each iteration, path
 selection because recursion depth is an ordinary column, temporal predicates
 as ordinary SQL inside the recursive step, and negation because
-\texttt{NOT EXISTS} can be applied to the materialised result. It has the
-strongest query surface in the set; what it lacks is what to point it at.
+\texttt{NOT EXISTS} can be applied to the materialised result. Among the evaluated executable interfaces, Databricks SQL is the one that
+exposes all six query-operation classes the workload uses; what it lacks is
+what to point them at.
 
 Its data-quality position is narrower than it first appears, and we revised it
 during this pass. The system table
@@ -815,14 +835,14 @@ change moves Q3 and Q7 from \rn\ to \rp\ by Eq.~(\ref{eq:answer}). We did not
 touch those verdicts; the derivation did.
 
 On run history our earlier wording was too strong. No join between
-\texttt{job\_run\_timeline} and the lineage tables is documented; the
+\texttt{job\_run\_timeline} and the lineage tables is documented --- the
 documented joins are to \texttt{lakeflow.jobs}, \texttt{billing.usage} and
 \texttt{compute.clusters} on \texttt{workspace\_id}, \texttt{job\_id} and
-\texttt{run\_id}. But a table-to-job association exists elsewhere:
+\texttt{run\_id} --- but a table-to-job association exists elsewhere:
 \texttt{upstream\_jobs} carries \texttt{job\_id} and \texttt{workspace\_id}
-beside the table identity, which are exactly those join keys. The cell stays
-\rp, now because that path needs anomaly detection enabled and covers only
-monitored tables --- not because no mapping exists~\cite{dbxdocs}.
+beside the table identity, exactly those keys. The cell stays \rp\ because
+that path needs anomaly detection enabled and covers only monitored
+tables, not because no mapping exists~\cite{dbxdocs}.
 
 \paragraph{Per-hop latency is represented by none of the six, and that is why
 Q4 fails everywhere.} The Q4 row of Table~\ref{tab:capability}(c) is uniformly
@@ -845,16 +865,16 @@ metadata change'' rather than ``what was in force''. Unity Catalog's lineage
 rows carry \texttt{event\_time} under a rolling one-year retention
 window~\cite{dbxdocs}.
 
-\paragraph{None answered more than three of the seven, and three answered
-none.} DataHub answers Q1--Q3, Egeria Q1, Q2 and Q6, and Unity Catalog Q1 and
-Q5, with Q3 and Q7 partial. The remaining three answer no query outright,
-though not for the same reason: OpenMetadata reaches \rp\ on four of the
-seven, more partials than any other system, and fails them on the query layer
-rather than the data; Atlas reaches \rp\ on one; and OpenLineage, having no
-query layer, is not gradeable here at all. We draw no overall ranking --- Egeria's three \ry\ and two \rp\
-are at least as strong a showing as DataHub's three \ry\ and none --- because
-the point is not which system wins but that the required capabilities are
-distributed across systems rather than concentrated in any one.
+\paragraph{No system answered more than three of the seven.} DataHub answers
+Q1--Q3, Egeria Q1, Q2 and Q6, and Unity Catalog Q1 and Q5 with Q3 and Q7
+partial. Of the remainder, OpenMetadata reaches \rp\ on four of the seven ---
+more partials than any other system --- and is limited on the query layer
+rather than the data, while Atlas reaches \rp\ on one. OpenLineage receives no workload verdict: it defines no query layer, so
+Eq.~(\ref{eq:answer}) does not apply, and reading that as \emph{answers
+nothing} would confuse a specification with an implementation. DataHub and Egeria each answer three queries natively, but not the same three,
+and their partial verdicts differ again. We draw no ranking: what matters to a
+reader choosing a stack is how capabilities are distributed against their own
+workload, not an aggregate score.
 
 \subsection{Threats to validity}\label{sec:threats}
 
@@ -904,9 +924,11 @@ surface over a graph it already stores, Unity Catalog needs metadata to point
 an already-capable surface at. Advice not distinguishing these is not
 actionable.
 
-\paragraph{The gap is often narrower than it appears.} For Unity Catalog, four
-of the five unanswerable queries would become answerable if the facts were
-recorded, the traversal machinery being already present. For the systems
+\paragraph{The gap is often narrower than it appears.} For Unity Catalog,
+all five queries it does not answer outright are bound by representation
+rather than by recursive SQL: the traversal machinery is present, and what is
+missing is schema versions, valid time, per-hop latency and assertion
+definitions. For the systems
 limited by expressiveness, GQL and SQL/PGQ standardised exactly the operations
 needed~\cite{deutsch2022gql}, and the semiring account of aggregation along
 paths is nearly two decades

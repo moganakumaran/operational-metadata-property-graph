@@ -1,4 +1,8 @@
 // Q6 Change attribution, bitemporal.
+//
+// Input is a DATASET plus the two times, not an incident. In the worked
+// example that dataset is orders_raw -- an upstream candidate Q3 surfaces --
+// not the incident dataset orders_clean. Q3 narrows, Q6 attributes.
 // Input : incident time t = 02:14, belief time b = 02:00
 // Output: the schema version that was VALID at t, and the one the catalog
 //         BELIEVED at b -- which are different, and that difference is the

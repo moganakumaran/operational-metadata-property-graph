@@ -22,6 +22,7 @@
    "hops": 1
   }
  ],
+ "witness_valid": true,
  "node_counts": {
   "Dataset": 5,
   "SchemaVersion": 6,

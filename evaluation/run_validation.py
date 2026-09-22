@@ -221,6 +221,36 @@ def main() -> int:
                   "capability": spec["capability"],
                   "reading": spec["reading"]}
 
+    # Every derived feeds edge must carry a witness pipeline that genuinely
+    # reads the source and writes the target, and whose latest successful run
+    # supplies latency_minutes. Q5 reconstructs the alternating path from that
+    # witness, so an edge without a valid one would silently break Q5 rather
+    # than fail loudly.
+    witness_bad = rows_of(con.execute("""
+        MATCH (d1:Dataset)-[f:feeds]->(d2:Dataset)
+        WHERE NOT EXISTS {
+                MATCH (p:Pipeline)-[:reads]->(d1)
+                WHERE p.name = f.via_pipeline }
+           OR NOT EXISTS {
+                MATCH (p:Pipeline)-[:writes]->(d2)
+                WHERE p.name = f.via_pipeline }
+           OR f.via_pipeline IS NULL
+        RETURN d1.name, d2.name, f.via_pipeline"""))
+    latency_bad = rows_of(con.execute("""
+        MATCH (d1:Dataset)-[f:feeds]->(d2:Dataset)
+        MATCH (p:Pipeline)<-[:instance_of]-(r:Run)
+        WHERE p.name = f.via_pipeline AND r.status = 'SUCCESS'
+        WITH d1, d2, f, max(r.scheduled_for) AS latest
+        MATCH (p2:Pipeline)<-[:instance_of]-(r2:Run)
+        WHERE p2.name = f.via_pipeline AND r2.scheduled_for = latest
+          AND r2.delay_minutes <> f.latency_minutes
+        RETURN d1.name, d2.name, f.latency_minutes, r2.delay_minutes"""))
+    print(f"\n  witness check: {len(witness_bad)} invalid via_pipeline, "
+          f"{len(latency_bad)} latency mismatch")
+    if witness_bad or latency_bad:
+        print(f"    invalid: {witness_bad}  mismatched: {latency_bad}")
+        failures += 1
+
     # Enumerate the Q4 paths explicitly. The paper describes this set in
     # prose, and an earlier draft said "three paths" when there are four --
     # recording it here lets consistency.py pin the prose to the data.
@@ -242,6 +272,7 @@ def main() -> int:
 
     payload = {"engine": f"kuzu {kuzu.__version__}",
                "q4_paths": q4_paths,
+               "witness_valid": not witness_bad and not latency_bad,
                "node_counts": counts, "edge_counts": edges,
                "queries": out,
                "all_executable": all(v.get("executable") for v in out.values()),

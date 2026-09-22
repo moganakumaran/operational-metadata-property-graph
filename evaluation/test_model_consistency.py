@@ -123,6 +123,20 @@ ck("both `owns` signatures can bind in Q5",
    re.search(r"\(pr:Principal\)-\[:owns\]->\(\w+\)", qsrc["Q5"]) is not None,
    "untyped endpoint binds Dataset and Pipeline")
 
+# the derived edge must record its witness, and the paper must define it
+ck("schema declares via_pipeline on feeds",
+   "via_pipeline" in re.search(r"CREATE REL TABLE feeds\((.*?)\);", schema, re.S).group(1))
+ck("paper formally defines via_pipeline",
+   r"\mathrm{via\_pipeline}" in tex and r"\label{eq:via}" in tex)
+ck("Q5 uses the witness, not an ad-hoc lookup",
+   "via_pipeline" in qsrc["Q5"])
+res_path = os.path.join(HERE, "results.json")
+if os.path.exists(res_path):
+    r = json.load(open(res_path, encoding="utf-8"))
+    ck("every derived feeds edge has a valid witness",
+       r.get("witness_valid") is True,
+       "run_validation.py checks reads/writes endpoints and latency agreement")
+
 # Q7 must be evaluated at an explicit time against the full validity interval
 ck("Q7 tests valid_from and valid_to",
    "valid_from" in qsrc["Q7"] and "valid_to" in qsrc["Q7"])
