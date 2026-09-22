@@ -21,23 +21,44 @@ impractical on a catalog-sized graph, and the paper says so in Sect. 6.5.
 
 ## Running it
 
-Kùzu publishes wheels for Python ≤ 3.12, so the venv must not be 3.13+.
+**Python 3.12 or earlier** — Kùzu publishes no wheels for 3.13+.
+**Kùzu 0.11.3**, pinned in `../requirements.txt`.
 
 ```bash
-python3.12 -m venv ../.venv
-../.venv/bin/pip install kuzu
-../.venv/bin/python run_validation.py
+cd <repo root>
+python3.12 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python evaluation/run_validation.py
 ```
 
-Expected output ends with:
+Expected output:
 
 ```
+  [PASS] Q1  2 row(s)   transitive closure over typed edges
+  [PASS] Q2  2 row(s)   column-level lineage closure with schema versioning
+  [PASS] Q3  2 row(s)   reverse traversal with a temporal predicate
+  [PASS] Q4  1 row(s)   variable-length traversal + path-local aggregation ...
+  [PASS] Q5  1 row(s)   path selection over the alternating dataset-pipeline ...
+  [PASS] Q6  2 row(s)   two independent temporal dimensions on one edge
+  [PASS] Q7  1 row(s)   negation applied under a transitive closure
+
   7/7 queries executable and matching expected results
 ```
 
-Exit code is non-zero if any query fails to execute or returns something other
-than its stated expectation, so this works as a CI gate. `../check.py` runs it
-alongside the LaTeX build.
+**Exit code is non-zero** if any query fails to execute or returns anything
+other than its stated expectation, so this works unmodified as a CI gate.
+`../check.py` runs it alongside the LaTeX build.
+
+To check the model itself rather than the queries:
+
+```bash
+python3 evaluation/test_model_consistency.py
+```
+
+That compares Figure 1, Table 1 and `schema.cypher` **by endpoint**, and fails
+if any stored relationship signature is left unexercised by every query. Both
+matter: an earlier draft drew `owns: Principal → Consumer`, which the model
+does not contain, and a label-level check passed it.
 
 ## Files
 
@@ -50,6 +71,7 @@ alongside the LaTeX build.
 | `run_validation.py` | Loads the graph, executes Q1–Q7, compares against `EXPECTED`, writes `results.json`. |
 | `capability_matrix.json` | The assessment: rubric, systems and versions, per-cell verdict + reason + citation key, and the per-query requirement mapping. |
 | `make_tables.py` | Generates the paper's capability table, splices it into `paper.tex`, and writes `SUPPLEMENTARY.md`. `--check` verifies both are current. |
+| `test_model_consistency.py` | Endpoint-level agreement between figure, table and schema, plus orphan detection. |
 | `results.json` | Output of the last validation run. |
 | `SUPPLEMENTARY.md` | Generated. Three tables relocated from the manuscript to meet the venue page limit: requirement-to-model traceability, systems/versions/evidence, and per-query validation detail with interpretations. |
 
@@ -70,7 +92,14 @@ that a query parsed. Three of the seven are worth deriving by hand to check us:
   at 02:14 but not yet recorded at 02:00, v1 recorded at 02:00 but no longer
   valid. That divergence is the reason the model is bitemporal.
 - **Q7** should return exactly one pair: `pricing_service` (tier 1) and
-  `fx_rates`, three hops upstream and carrying no assertion.
+  `fx_rates`, three hops upstream, carrying no assertion at the 02:14
+  evaluation time under the schema version valid at that instant.
+- **Q5** should return a **Pipeline**, not a dataset: `agg_revenue` at
+  position 1, owned by `revenue_oncall`. The incident dataset
+  `orders_clean` is deliberately unowned, so the nearest owner is the
+  pipeline that writes the next dataset. Traversing only the derived `feeds`
+  relation collapses that pipeline out of the path and returns the wrong
+  principal — which is why `owns: Principal → Pipeline` is in the model.
 
 ## Kùzu dialect notes
 

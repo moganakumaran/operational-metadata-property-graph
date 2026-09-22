@@ -1,0 +1,3 @@
+# Reference implementation for the paper's seven workload queries.
+# Kuzu publishes no wheels for Python 3.13+, so use 3.12 or earlier.
+kuzu==0.11.3

@@ -197,17 +197,26 @@ MATCH (c:Consumer {name:'pricing_service'}), (d:Dataset {name:'daily_revenue'})
 MATCH (c:Consumer {name:'finance_dashboard'}), (d:Dataset {name:'daily_revenue'})
   CREATE (c)-[:consumes]->(d);
 
+// Ownership is deliberately arranged so that Q5's answer is a PIPELINE owner.
+// The incident dataset orders_clean is intentionally UNOWNED -- a real and
+// common situation for an intermediate table -- so the nearest owned node on
+// the dependency path is the pipeline that produced the next dataset. If every
+// dataset were owned, Principal->Pipeline would never change an answer and
+// would be a model element no query exercises.
 CREATE (:Principal {name:'data_platform_team', kind:'TEAM'});
 CREATE (:Principal {name:'analytics_team',     kind:'TEAM'});
+CREATE (:Principal {name:'revenue_oncall',     kind:'ROTATION'});
 MATCH (p:Principal {name:'data_platform_team'}), (d:Dataset)
-  WHERE d.name IN ['orders_raw','fx_rates','fx_rates_smoothed','orders_clean']
+  WHERE d.name IN ['orders_raw','fx_rates','fx_rates_smoothed']
   CREATE (p)-[:owns]->(d);
 MATCH (p:Principal {name:'analytics_team'}), (d:Dataset {name:'daily_revenue'})
   CREATE (p)-[:owns]->(d);
 MATCH (p:Principal {name:'data_platform_team'}), (pl:Pipeline)
   WHERE pl.name IN ['ingest_orders','ingest_fx','smooth_fx','clean_orders']
   CREATE (p)-[:owns]->(pl);
-MATCH (p:Principal {name:'analytics_team'}), (pl:Pipeline {name:'agg_revenue'})
+// The pipeline that writes daily_revenue is owned by the on-call rotation,
+// one position nearer the incident than daily_revenue's own owner.
+MATCH (p:Principal {name:'revenue_oncall'}), (pl:Pipeline {name:'agg_revenue'})
   CREATE (p)-[:owns]->(pl);
 
 CREATE (:SLA {sla_id:'sla_daily_revenue', max_staleness_minutes:30});

@@ -57,13 +57,16 @@ EXPECTED = {
     },
     "Q3": {
         "capability": "reverse traversal with a temporal predicate",
-        "rows": [["fx_rates", "ingest_fx", "r_ingest_fx_01", "FAILED"],
+        "rows": [["fx_rates", "ingest_fx", "r_ingest_fx_01", "FAILED", None],
                  ["fx_rates_smoothed", "smooth_fx", "r_smooth_fx_01",
-                  "SUCCESS"]],
+                  "SUCCESS", "a_smoothed_freshness"]],
         "reading": "two candidates in the 60-minute window before 02:14: a "
-                   "failed ingest run, and a run that succeeded but produced a "
-                   "failing assertion. The second is why AssertionResult and "
-                   "the evaluates edge have to exist",
+                   "failed ingest run with no assertion attached, and a run "
+                   "that SUCCEEDED but produced a failing assertion, named "
+                   "here by traversing `evaluates` to the QualityAssertion. "
+                   "The second row is why AssertionResult and QualityAssertion "
+                   "are separate nodes: 'some assertion failed' is not "
+                   "actionable, 'a_smoothed_freshness failed' is",
     },
     "Q4": {
         "capability": "variable-length traversal + path-local aggregation + "
@@ -77,13 +80,19 @@ EXPECTED = {
                    "breach",
     },
     "Q5": {
-        "capability": "shortest-path selection with in-graph ownership",
-        "rows": [["pricing_service", 1, "orders_clean", 0,
-                  "data_platform_team"]],
-        "reading": "the most critical affected consumer is pricing_service; "
-                   "the nearest owned node on the shortest path from the "
-                   "incident is the incident dataset itself, owned by "
-                   "data_platform_team",
+        "capability": "path selection over the alternating dataset-pipeline "
+                      "path, with in-graph ownership",
+        "rows": [["pricing_service", 1, "agg_revenue", "Pipeline", 1,
+                  "revenue_oncall"]],
+        "reading": "the most critical affected consumer is pricing_service. "
+                   "The incident dataset orders_clean (position 0) is "
+                   "unowned; the nearest owned node is the PIPELINE "
+                   "agg_revenue at position 1, owned by the revenue_oncall "
+                   "rotation -- nearer than daily_revenue's owner at position "
+                   "2. This is the case that makes Principal->Pipeline "
+                   "load-bearing: traversing only the derived feeds relation "
+                   "would collapse the pipeline out of the path and return "
+                   "the wrong principal",
     },
     "Q6": {
         "capability": "two independent temporal dimensions on one edge",
@@ -99,8 +108,9 @@ EXPECTED = {
         "capability": "negation applied under a transitive closure",
         "rows": [["pricing_service", 1, "fx_rates"]],
         "reading": "pricing_service is tier 1 and depends, three hops "
-                   "upstream, on fx_rates, which carries no assertion on the "
-                   "dataset or on any field of its currently valid schema",
+                   "upstream, on fx_rates, which at the 02:14 evaluation time "
+                   "carries no assertion on the dataset and none on any field "
+                   "declared by the schema version valid at that instant",
     },
 }
 
@@ -127,6 +137,8 @@ def rows_of(result) -> list[list]:
 def norm(rows) -> list[list]:
     """Make engine output comparable to the hand-written expectations."""
     def one(v):
+        if v is None:
+            return None
         if isinstance(v, bool):
             return v
         if isinstance(v, (int, float)):

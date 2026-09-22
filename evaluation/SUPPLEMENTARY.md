@@ -43,7 +43,7 @@ Each query executed against the synthetic graph on Kuzu 0.11.3; *matches* means 
 | **Q2** | column-level lineage closure with schema versioning | yes | yes | 2 |
 | **Q3** | reverse traversal with a temporal predicate | yes | yes | 2 |
 | **Q4** | variable-length traversal + path-local aggregation + aggregation across paths | yes | yes | 1 |
-| **Q5** | shortest-path selection with in-graph ownership | yes | yes | 1 |
+| **Q5** | path selection over the alternating dataset-pipeline path, with in-graph ownership | yes | yes | 1 |
 | **Q6** | two independent temporal dimensions on one edge | yes | yes | 2 |
 | **Q7** | negation applied under a transitive closure | yes | yes | 1 |
 
@@ -51,8 +51,8 @@ Each query executed against the synthetic graph on Kuzu 0.11.3; *matches* means 
 
 - **Q1** — both consumers of daily_revenue are reachable downstream of orders_clean; pricing_service ranks first at criticality 1
 - **Q2** — dropping orders_raw.currency breaks amount_usd at one hop through an INDIRECT/JOIN dependency it never projects, and revenue_usd at two hops; a projection-only or dataset-level analysis reports this change as safe
-- **Q3** — two candidates in the 60-minute window before 02:14: a failed ingest run, and a run that succeeded but produced a failing assertion. The second is why AssertionResult and the evaluates edge have to exist
+- **Q3** — two candidates in the 60-minute window before 02:14: a failed ingest run with no assertion attached, and a run that SUCCEEDED but produced a failing assertion, named here by traversing `evaluates` to the QualityAssertion. The second row is why AssertionResult and QualityAssertion are separate nodes: 'some assertion failed' is not actionable, 'a_smoothed_freshness failed' is
 - **Q4** — the slowest of three paths runs fx_rates -> fx_rates_smoothed -> orders_clean -> daily_revenue and accumulates 20+12+4 = 36 minutes, breaching the 30-minute SLA. The two shorter paths both total 16, so reachability or a per-dataset freshness value would not surface the breach
-- **Q5** — the most critical affected consumer is pricing_service; the nearest owned node on the shortest path from the incident is the incident dataset itself, owned by data_platform_team
+- **Q5** — the most critical affected consumer is pricing_service. The incident dataset orders_clean (position 0) is unowned; the nearest owned node is the PIPELINE agg_revenue at position 1, owned by the revenue_oncall rotation -- nearer than daily_revenue's owner at position 2. This is the case that makes Principal->Pipeline load-bearing: traversing only the derived feeds relation would collapse the pipeline out of the path and return the wrong principal
 - **Q6** — v2 was VALID at the 02:14 incident but was NOT yet believed by the catalog at 02:00, while v1 was believed at 02:00 but no longer valid. The two dimensions disagree, which is the case a single version history cannot represent
-- **Q7** — pricing_service is tier 1 and depends, three hops upstream, on fx_rates, which carries no assertion on the dataset or on any field of its currently valid schema
+- **Q7** — pricing_service is tier 1 and depends, three hops upstream, on fx_rates, which at the 02:14 evaluation time carries no assertion on the dataset and none on any field declared by the schema version valid at that instant

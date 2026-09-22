@@ -11,6 +11,8 @@ this paper:
   overfull     a table wider than its column, and a TikZ figure that resized
                past \\textwidth
   pages        8-10 required by the CfP, measured on the PDF
+  model        endpoint-level figure/table/schema agreement, and no model
+               element left unexercised by any query
   refs         verify_refs.py: every reference confirmed against a live index
   independence 8-gram similarity against the author's prior papers, which the
                venue plan requires to be near zero
@@ -107,6 +109,15 @@ def main() -> int:
     tail = [l for l in r.stdout.splitlines() if "failure" in l]
     results.append(gate("manuscript self-consistent", r.returncode == 0,
                         tail[-1] if tail else ""))
+
+    # Model consistency by ENDPOINT, not by label. The label-level check above
+    # passed while Figure 1 drew owns: Principal -> Consumer, a relationship
+    # the model does not contain, and omitted owns: Principal -> Dataset.
+    # This also fails if any stored signature stops being exercised.
+    r = run([sys.executable, "evaluation/test_model_consistency.py"])
+    tail = [l for l in r.stdout.splitlines() if "failure" in l]
+    results.append(gate("model consistent (endpoints, orphans)",
+                        r.returncode == 0, tail[-1] if tail else ""))
 
     if not args.skip_refs:
         r = run([sys.executable, "-u", "verify_refs.py"])

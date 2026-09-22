@@ -66,8 +66,9 @@ its interface can \emph{ask} together suffice.
 
 We treat a reliability workload as a requirements instrument. We specify a
 reference property graph for lakehouse operational metadata --- eleven node
-labels, fifteen edge types, schema and lineage edges carrying both valid time
-and system time --- and define seven reliability queries formally, each reduced
+labels, thirteen stored relationship labels spanning fifteen typed endpoint
+signatures, and one derived dataset-dependency relation, with schema and
+lineage edges carrying both valid time and system time --- and define seven reliability queries formally, each reduced
 to the graph operations it needs. We validate the model by implementing it on
 an embedded property-graph engine over a synthetic lakehouse and executing all
 seven queries against expected results fixed in advance. We then assess six
@@ -130,8 +131,10 @@ question needs.
 \end{itemize}
 
 \paragraph{Contributions.} A \textbf{reference property-graph model}
-(Sect.~\ref{sec:model}): eleven node labels, fifteen edge types, schema and
-lineage edges carrying valid time \emph{and} system time. A \textbf{formally
+(Sect.~\ref{sec:model}): eleven node labels, thirteen stored relationship
+labels spanning fifteen typed endpoint signatures, and one derived
+dataset-dependency relation, with schema and lineage edges carrying valid
+time \emph{and} system time. A \textbf{formally
 specified workload} of seven reliability queries (Sect.~\ref{sec:workload}),
 each with input, output and required operations, which converts ``does this
 system have lineage?'' into a question with a checkable answer. An
@@ -232,14 +235,18 @@ workload reads: \nd{Dataset}(\texttt{name}),
 \nd{Incident}(\texttt{incident\_id}, \texttt{detected\_at}).
 
 \begin{table}[t]
-\caption{Edge types, with node labels abbreviated: \nd{D}ataset,
+\caption{Stored relationship signatures of the reference model, with node
+labels abbreviated: \nd{D}ataset,
 \nd{SV} SchemaVersion, \nd{F}ield, \nd{P}ipeline, \nd{R}un,
 \nd{QA} QualityAssertion, \nd{AR} AssertionResult, \nd{C}onsumer,
-\nd{Pr}incipal, \nd{I}ncident. $\dagger$ marks the two bitemporal edges,
-carrying \texttt{valid\_from}, \texttt{valid\_to}, \texttt{recorded\_from} and
-\texttt{recorded\_to}. \eg{feeds} is \emph{derived}, not stored
-(Sect.~\ref{sec:derived}). Every edge here appears in Fig.~\ref{fig:model},
-and none is absent from it.}
+\nd{Pr}incipal, \nd{I}ncident. Thirteen relationship labels span fifteen
+signatures: \eg{asserts\_on} and \eg{owns} each admit two endpoint pairs and
+are listed once per pair. $\dagger$ marks the two bitemporal relationships,
+which carry \texttt{valid\_from}, \texttt{valid\_to},
+\texttt{recorded\_from} and \texttt{recorded\_to}. \eg{feeds} is a
+\emph{derived} dependency relation and is not stored
+(Sect.~\ref{sec:derived}). Every signature here appears in
+Fig.~\ref{fig:model}, and none is absent from it.}
 \label{tab:edges}
 \scriptsize
 \begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{0.23\columnwidth}@{}}
@@ -383,6 +390,7 @@ paper.
   t/.style={n, fill=black!12, very thick},
   e/.style={-{Latex[length=1.8mm]}, shorten >=1.5pt, shorten <=1.5pt},
   de/.style={e, dashed},
+  o/.style={e, very thick},   % ownership: decides Q5
   lh/.style={font=\tiny\scshape, above=0.3mm, inner sep=1pt},
   lv/.style={font=\tiny\scshape, right=0.3mm, inner sep=1pt}
 ]
@@ -403,7 +411,7 @@ paper.
 \node[n, below=13mm of cons]   (sla)  {SLA};
 \node[n, below=13mm of sv]     (inc)  {Incident};
 
-\draw[e] (prin) -- node[lh]{owns}         (pipe);
+\draw[o] (prin) -- node[lh]{owns}         (pipe);
 \draw[e] (run)  -- node[lh]{instance\_of} (pipe);
 \draw[e] (run)  -- node[lh]{produced}     (ar);
 \draw[e] (ar)   -- node[lh]{evaluates}    (qa);
@@ -418,7 +426,10 @@ paper.
 \draw[e] (ds) -- node[lh, above=3.2mm, pos=0.5]{has\_schema $\dagger$} (sv);
 \draw[e] (sv) -- node[lh]{declares}      (fl);
 \draw[e] (cons) -- node[lh]{consumes}    (ds);
-\draw[e] (prin.south) to[out=-90,in=150] node[lv,pos=0.35]{owns} (cons.north west);
+% Both `owns` signatures, drawn thicker because Q5's answer depends on which
+% of them is nearer the incident. The earlier version of this figure drew
+% owns: Principal -> Consumer, which the model does not contain.
+\draw[o] (prin.south) to[out=-70,in=160] node[lv,pos=0.55]{owns} (ds.north west);
 
 \draw[e] (fl.south east) to[out=-40,in=40,looseness=7]
          node[font=\tiny\scshape, right=0.5mm]{derives\_from $\dagger$}
@@ -441,8 +452,11 @@ paper.
 attributes in a catalog. Solid edges are stored; the \textbf{dashed} self-loop
 on \nd{Dataset} is the \emph{derived} \eg{feeds} relation of
 Eq.~(\ref{eq:feeds}). The two edges marked $\dagger$ are bitemporal, carrying
-valid time and system time rather than a single write timestamp. All fifteen
-stored edges of Table~\ref{tab:edges} appear here, and no others.}
+valid time and system time rather than a single write timestamp. Ownership is
+drawn heavier because Q5's answer depends on which owned node is nearer the
+incident, and \eg{owns} attaches to both datasets and pipelines. All fifteen
+stored endpoint signatures of Table~\ref{tab:edges} appear here, and no
+others.}
 \label{fig:model}
 \end{figure*}
 
@@ -481,7 +495,9 @@ writing $u$ either has $\texttt{status} = \textsc{failed}$ or \eg{produced} an
 $\texttt{ended\_at} \in [i.\texttt{detected\_at} - \Delta,\
 i.\texttt{detected\_at}]$. \emph{Requires:} reverse traversal and a temporal predicate on run state. The
 second disjunct is why \nd{AssertionResult} and \eg{evaluates} exist: a run can
-succeed and still be the cause.
+succeed and still be the cause, and traversing \eg{evaluates} to the
+\nd{QualityAssertion} turns ``some assertion failed'' into a named one, which
+is the difference between a signal and an action.
 
 \paragraph{Q4 Freshness propagation.}
 \emph{In:} dataset $d$. \emph{Out:} implied staleness, and whether it breaches
@@ -506,15 +522,31 @@ delay arrives. The executed form is \texttt{evaluation/q4.cypher}; Kuzu has no
 
 
 \paragraph{Q5 Escalation routing.}
-\emph{In:} incident $i$ with $i \xrightarrow{\text{affects}} d_0$. \emph{Out:} one
-\nd{Principal} to page. ``Nearest owner on the path to the most critical
-affected consumer'' is ambiguous, so: (i)~criticality is a total order on
-integers, lower more critical; (ii)~the target $c^{*}$ is the reachable
-consumer of minimum criticality, ties broken by name; (iii)~among nodes of a
-shortest \eg{feeds} path from $d_0$ to $c^{*}$'s dataset, take the one at
-minimum hop distance carrying an \eg{owns} edge; (iv)~if several principals own
-it, the lexicographically first. \emph{Requires:} path selection --- a choice
-among paths --- and ownership resolvable in-graph.
+\emph{In:} incident $i$ with $i \xrightarrow{\text{affects}} d_0$. \emph{Out:}
+one \nd{Principal} to page, and the node it owns. Ownership attaches to
+\emph{both} datasets and pipelines, so Q5 is defined over the alternating
+dependency path
+\begin{equation}
+d_0 \xleftarrow{\text{reads}} p_1 \xrightarrow{\text{writes}} d_1
+      \xleftarrow{\text{reads}} p_2 \xrightarrow{\text{writes}} \cdots
+\label{eq:altpath}
+\end{equation}
+rather than over \eg{feeds} alone, which collapses $p_k$ out of the path and
+would make a pipeline owner unreachable. Position interleaves the two kinds:
+$d_k$ sits at $2k$ and $p_{k+1}$ at $2k+1$. Then: (i)~criticality is a total
+order on integers, lower more critical; (ii)~the target $c^{*}$ is the
+reachable consumer of minimum criticality, ties broken by name; (iii)~among
+nodes of a shortest dependency path from $d_0$ to $c^{*}$'s dataset, take the
+one at minimum position carrying an \eg{owns} edge; (iv)~if several principals
+own it, the lexicographically first. \emph{Requires:} path selection, and
+ownership resolvable in-graph over two node kinds.
+
+This is the one query that needs the intermediate \nd{Pipeline}, and it is why
+the \eg{owns}\,:\,\nd{Principal} $\rightarrow$ \nd{Pipeline} signature is in
+the model at all. Q1, Q3, Q4 and Q7 are content with \eg{feeds}; Q5 recovers
+the alternating path by expanding each \eg{feeds} hop back through
+\texttt{via\_pipeline}, which Eq.~(\ref{eq:feeds}) records, since no engine in
+common use offers variable-length traversal over a composite pattern.
 
 \paragraph{Q6 Change attribution.}
 \emph{In:} incident time $t$, belief time $b$. \emph{Out:} for each
@@ -524,17 +556,22 @@ among paths --- and ownership resolvable in-graph.
 disagree, the disagreement is the finding.
 
 \paragraph{Q7 Coverage gaps.}
-\emph{In:} criticality threshold $k$. \emph{Out:} pairs $(c, u)$ where
-$c.\texttt{criticality} \le k$, $c \xrightarrow{\text{consumes}} d$,
-$u \xrightarrow{\text{feeds}^{*}} d$, and $u$ is \emph{unasserted}. Four readings of ``unasserted''
-are available --- no assertion of any kind, none currently valid, none
+\emph{In:} criticality threshold $k$ \emph{and an evaluation time} $t$.
+\emph{Out:} pairs $(c, u)$ where $c.\texttt{criticality} \le k$,
+$c \xrightarrow{\text{consumes}} d$, $u \xrightarrow{\text{feeds}^{*}} d$, and
+$u$ is \emph{unasserted at} $t$. The time is not optional: because
+\eg{has\_schema} is bitemporal, which fields a dataset declares is itself a
+function of when one asks, so coverage is judged against the version
+satisfying Eq.~(\ref{eq:valid}) at $t$. Four readings of ``unasserted'' are
+available --- no assertion of any kind, none currently valid, none
 \emph{passing}, or none covering the relevant field. We commit to the first,
-refined to the schema in force: $u$ is unasserted iff no \nd{QualityAssertion}
-\eg{asserts\_on} $u$ \emph{and} none \eg{asserts\_on} any \nd{Field} declared
-by a schema version of $u$ whose valid interval has not closed. Existence, not
-outcome: a failing assertion is still coverage. \emph{Requires:} negation
-\emph{under} a transitive closure. The predicate is ordinary; ranging it over a
-traversal rather than a flat result set is not.
+refined to the schema in force: $u$ is unasserted at $t$ iff no
+\nd{QualityAssertion} \eg{asserts\_on} $u$ \emph{and} none \eg{asserts\_on} any
+\nd{Field} declared by the schema version of $u$ valid at $t$. Existence, not
+outcome: a \emph{failing} assertion still counts as coverage, because Q7 asks
+what is unwatched and Q3 asks what is broken. \emph{Requires:} negation
+\emph{under} a transitive closure, with a temporal predicate selecting the
+schema version.
 
 
 % =====================================================================
@@ -628,7 +665,7 @@ model: a query naming an undeclared edge fails at parse time rather than
 silently returning nothing. That is not incidental --- an undefined
 \eg{feeds} edge survived an earlier draft because nothing checked it.
 
-The graph holds \textbf{44 nodes across 11 labels and 65 edges across 14
+The graph holds \textbf{45 nodes across 11 labels and 64 edges across 14
 types}, 4 of them derived \eg{feeds} edges materialised by
 Eq.~(\ref{eq:feeds}). It is deliberately small, so every expected result is
 derivable by hand. It models the incident of Sect.~\ref{sec:bitemporal} --- a
@@ -665,8 +702,14 @@ only the path-local sum followed by the cross-path maximum does. The 4-minute
 single-hop path makes the point sharply: a dataset one hop from the target can
 look timely while the graph behind it is half an hour late. Q6 returns both schema versions with
 opposite verdicts --- v2 valid at the incident but not believed at 02:00, v1
-believed then but no longer valid. Q7 returns one pair: the tier-1 pricing
-service and \texttt{fx\_rates}, three hops upstream.
+believed then but no longer valid. Q7, evaluated at 02:14, returns one pair: the tier-1 pricing service and
+\texttt{fx\_rates}, three hops upstream and unasserted under the schema valid
+at that instant. Q5 returns a \emph{pipeline} owner: the incident dataset
+\texttt{orders\_clean} is unowned, so the nearest owned node on the dependency
+path is \texttt{agg\_revenue} at position~1, owned by the on-call rotation ---
+nearer than \texttt{daily\_revenue}'s own owner at position~2. Traversing only
+\eg{feeds} would have collapsed that pipeline out of the path and paged the
+wrong team.
 
 What this does \emph{not} show: no timings were taken and none should be
 inferred. The graph is orders of magnitude smaller than a real catalog, and a
@@ -692,7 +735,7 @@ group, the answerability derived from them by Eq.~(\ref{eq:answer}).
 \quad field-level lineage & \ry & \rp & \ry & \ry & \ry & \rp \\
 \quad schema versions & \ry & \rp & \ry & \ry & \ry & \rn \\
 \quad run history & \ry & \rp & \ry & \ry & \rp & \rp \\
-\quad quality assertions & \ry & \rn & \ry & \ry & \rp & \rn \\
+\quad quality assertions & \ry & \rn & \ry & \ry & \rp & \rp \\
 \quad ownership & \rn & \ry & \ry & \ry & \ry & \ry \\
 \quad per-hop latency & \rn & \rn & \rn & \rn & \rn & \rn \\
 \quad valid time & \rn & \rp & \rn & \rn & \ry & \rn \\
@@ -711,11 +754,11 @@ group, the answerability derived from them by Eq.~(\ref{eq:answer}).
 \multicolumn{7}{@{}l}{\textbf{(c) Workload answerability \emph{-- derived from (a) and (b) by Eq.~(\ref{eq:answer})}}} \\[1pt]
 \quad Q1 Downstream impact & \rna & \rn & \ry & \rp & \ry & \ry \\
 \quad Q2 Breaking change & \rna & \rn & \ry & \rp & \ry & \rn \\
-\quad Q3 Root-cause candidates & \rna & \rn & \ry & \rp & \rp & \rn \\
+\quad Q3 Root-cause candidates & \rna & \rn & \ry & \rp & \rp & \rp \\
 \quad Q4 Freshness propagation & \rna & \rn & \rn & \rn & \rn & \rn \\
 \quad Q5 Escalation routing & \rna & \rn & \rn & \rn & \rp & \ry \\
 \quad Q6 Change attribution & \rna & \rp & \rn & \rn & \ry & \rn \\
-\quad Q7 Coverage gaps & \rna & \rn & \rn & \rp & \rn & \rn \\
+\quad Q7 Coverage gaps & \rna & \rn & \rn & \rp & \rn & \rp \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -749,23 +792,46 @@ rather than the storage engine.
 
 Unity Catalog is the mirror image, limited by \emph{representation}. Databricks
 SQL supports \texttt{WITH RECURSIVE} from Databricks Runtime~17.0, with a
-default limit of 100 recursion levels~\cite{dbxdocs}, so a recursive CTE over
-\texttt{system.access.table\_lineage} expresses every operation in group~(b):
-closure and reverse traversal by choice of join, a path-local fold by an
-accumulator down each branch, path selection by minimum recursion depth,
-temporal predicates as ordinary SQL, and negation by \texttt{NOT EXISTS} over
-the recursive result. It has the strongest query surface in the set; what it
-lacks is what to point it at --- no schema-version history, no assertion model,
-and run state in \texttt{system.lakeflow.job\_run\_timeline} with no documented
-join to lineage records~\cite{dbxdocs}. Hence \ry\ on Q1 and Q5, and \rn\
-elsewhere.
+default limit of 100 recursion levels and a one-million-row
+bound~\cite{dbxdocs}, so a recursive CTE over
+\texttt{system.access.table\_lineage} expresses each operation in group~(b):
+closure and reverse traversal by choice of join direction, a path-local fold
+because a recursive CTE carries columns forward on each iteration, path
+selection because recursion depth is an ordinary column, temporal predicates
+as ordinary SQL inside the recursive step, and negation because
+\texttt{NOT EXISTS} can be applied to the materialised result. It has the
+strongest query surface in the set; what it lacks is what to point it at.
+
+Its data-quality position is narrower than it first appears, and we revised it
+during this pass. The system table
+\texttt{data\_quality\_}\allowbreak\texttt{monitoring.table\_results} records
+freshness and completeness \emph{results} per table, which corresponds to
+\nd{AssertionResult}. There is no companion table of check
+\emph{definitions}: anomaly detection is inferred from a table's own history
+rather than authored, enabled per schema or catalog rather than declared per
+check, and table-scoped, with no column-level checks. Nothing corresponds to
+\nd{QualityAssertion}, so the cell is \rp~\cite{dbxdocs} --- and that single
+change moves Q3 and Q7 from \rn\ to \rp\ by Eq.~(\ref{eq:answer}). We did not
+touch those verdicts; the derivation did.
+
+On run history our earlier wording was too strong. No join between
+\texttt{job\_run\_timeline} and the lineage tables is documented; the
+documented joins are to \texttt{lakeflow.jobs}, \texttt{billing.usage} and
+\texttt{compute.clusters} on \texttt{workspace\_id}, \texttt{job\_id} and
+\texttt{run\_id}. But a table-to-job association exists elsewhere:
+\texttt{upstream\_jobs} carries \texttt{job\_id} and \texttt{workspace\_id}
+beside the table identity, which are exactly those join keys. The cell stays
+\rp, now because that path needs anomaly detection enabled and covers only
+monitored tables --- not because no mapping exists~\cite{dbxdocs}.
 
 \paragraph{Per-hop latency is represented by none of the six, and that is why
 Q4 fails everywhere.} The Q4 row of Table~\ref{tab:capability}(c) is uniformly
 \rn, and the derivation locates the cause as a representation gap, not a query
 gap. DataHub comes closest with a \texttt{FRESHNESS} assertion
-type~\cite{datahubdocs}, but per dataset rather than per edge, so nothing
-accumulates along a path; for Unity Catalog the query would be expressible the
+type~\cite{datahubdocs}, and Unity Catalog reports commit freshness as
+predicted versus actual commit time~\cite{dbxdocs} --- but both are per-table
+staleness signals, not a latency attributed to a dependency edge, so neither
+accumulates along a path. For Unity Catalog the query would be expressible the
 moment the quantity existed. We had supposed every ingredient for Q4 was stored
 somewhere in the set; separating the layers showed otherwise, and we record the
 correction rather than dropping the claim.
@@ -781,11 +847,11 @@ window~\cite{dbxdocs}.
 
 \paragraph{None answered more than three of the seven, and three answered
 none.} DataHub answers Q1--Q3, Egeria Q1, Q2 and Q6, and Unity Catalog Q1 and
-Q5. The remaining three answer no query outright, though not for the same
-reason: OpenMetadata reaches \rp\ on four of the seven, more partials than any
-other system, and fails them on the query layer rather than the data; Atlas
-reaches \rp\ on one; and OpenLineage, having no query layer, is not gradeable
-here at all. We draw no overall ranking --- Egeria's three \ry\ and two \rp\
+Q5, with Q3 and Q7 partial. The remaining three answer no query outright,
+though not for the same reason: OpenMetadata reaches \rp\ on four of the
+seven, more partials than any other system, and fails them on the query layer
+rather than the data; Atlas reaches \rp\ on one; and OpenLineage, having no
+query layer, is not gradeable here at all. We draw no overall ranking --- Egeria's three \ry\ and two \rp\
 are at least as strong a showing as DataHub's three \ry\ and none --- because
 the point is not which system wins but that the required capabilities are
 distributed across systems rather than concentrated in any one.
@@ -807,7 +873,7 @@ the workload; it does not establish minimality, only that a query exists for
 every element. Expected results were fixed before execution, but written by the
 same author as the queries.
 
-\paragraph{External validity.} Synthetic validation at 44 nodes says nothing
+\paragraph{External validity.} Synthetic validation at 45 nodes says nothing
 about production behaviour, and there is no performance evaluation here at all.
 A capability marked \ry\ may be prohibitively expensive on a real catalog, and
 one marked \rn\ may be irrelevant to workloads other than this one.
@@ -881,8 +947,8 @@ are defensible rather than uniquely correct.
 \paragraph{Conclusion.} Lakehouse reliability questions form a graph workload
 naturally, and writing them down formally exposes what a metadata layer must
 support: seven queries reduce to six graph operations over eleven node labels
-and fifteen edge types, and the reference model expresses all seven when
-executed. A compact workload is a usable requirements instrument, converting an
+and fifteen stored endpoint signatures, and the reference model expresses all
+seven when executed. A compact workload is a usable requirements instrument, converting an
 unfalsifiable question about features into a checkable one about operations,
 and it is the part of this work most readily reused with a different set of
 queries. The practical gap in contemporary systems lies less between metadata
@@ -899,8 +965,9 @@ integration with observability systems that already hold the run-delay data Q4
 needs. Whether agents can be trusted to run such queries and act on the results
 during an incident is a further question this paper does not address. The
 reference model, synthetic graph, all seven queries, the validation runner and
-the capability matrix with per-cell evidence are released with this paper; the
-capability table is generated from that data rather than transcribed.
+the capability matrix with per-cell evidence \emph{will be made publicly
+available with the final version}; the capability table is generated from
+that data rather than transcribed.
 
 \bibliography{references}
 

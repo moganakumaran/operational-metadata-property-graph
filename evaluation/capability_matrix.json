@@ -158,7 +158,7 @@
    ],
    "Unity Catalog": [
     "P",
-    "system.lakeflow.job_run_timeline has period_start_time, period_end_time, result_state, but lives in a different schema and the docs define no join from it to lineage records [https://docs.databricks.com/aws/en/admin/system-tables/jobs]",
+    "system.lakeflow.job_run_timeline carries workspace_id, job_id, run_id, period_start_time, period_end_time and result_state, and documents joins to system.lakeflow.jobs, billing.usage and compute.clusters on workspace_id/job_id/run_id. No join to system.access.table_lineage is documented. A table-to-job association does exist elsewhere: data_quality_monitoring.table_results.upstream_jobs carries job_id and workspace_id alongside the table identity, which are the documented join keys into job_run_timeline. Partial because that path requires anomaly detection to be enabled, covers only monitored tables, and its root_cause_analysis and downstream_impact structs are Beta [https://docs.databricks.com/aws/en/admin/system-tables/jobs]",
     "dbxdocs"
    ]
   },
@@ -189,8 +189,8 @@
     "egeriadocs"
    ],
    "Unity Catalog": [
-    "N",
-    "no assertion model in Unity Catalog itself [https://docs.databricks.com/aws/en/admin/system-tables/lineage]",
+    "P",
+    "system.data_quality_monitoring.table_results records freshness and completeness CHECK RESULTS per table (status, last_value, predicted_value), which corresponds to AssertionResult. There is no separate table of check DEFINITIONS, so nothing corresponds to QualityAssertion: anomaly detection is inferred from table history rather than authored, and is enabled per schema or catalog rather than declared per check. Checks are table-level (freshness, completeness); column-level checks are not offered, and completeness slicing by column group is Beta. Partial because result state exists but the assertion definition the model distinguishes does not, and the scope is narrower than the field-level assertions Q7 admits [https://docs.databricks.com/aws/en/admin/system-tables/data-quality-monitoring]",
     "dbxdocs"
    ]
   },
@@ -254,7 +254,7 @@
    ],
    "Unity Catalog": [
     "N",
-    "lineage rows carry event_time, not a hop latency; run delay is in a separate schema [https://docs.databricks.com/aws/en/admin/system-tables/lineage]",
+    "Data quality monitoring reports commit freshness per table as predicted versus actual commit time, which is a per-table staleness signal, not a latency attributed to a dependency edge. Lineage rows carry event_time, not a hop latency, and run delay lives in a separate schema. Q4 needs a quantity on the edge so it can be accumulated along a path; none of these is that [https://docs.databricks.com/aws/en/admin/system-tables/data-quality-monitoring]",
     "dbxdocs"
    ]
   },
@@ -353,7 +353,7 @@
    ],
    "Unity Catalog": [
     "Y",
-    "WITH RECURSIVE over system.access.table_lineage; requires DBR 17.0+, default limit 100 levels [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "WITH RECURSIVE over system.access.table_lineage joins source_table_full_name to target_table_full_name; requires DBR 17.0+, default limit 100 recursion levels and 1,000,000 rows [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
     "dbxdocs"
    ]
   },
@@ -385,7 +385,7 @@
    ],
    "Unity Catalog": [
     "Y",
-    "the recursion joins in either direction [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "the same recursion with the join direction reversed; no separate construct is needed [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
     "dbxdocs"
    ]
   },
@@ -417,7 +417,7 @@
    ],
    "Unity Catalog": [
     "Y",
-    "a recursive CTE carries a running accumulator down each branch, which is exactly a path-local fold [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "a recursive CTE carries columns forward on each iteration, so an accumulator column summed down each branch is a path-local fold [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
     "dbxdocs"
    ]
   },
@@ -449,7 +449,7 @@
    ],
    "Unity Catalog": [
     "Y",
-    "recursion depth is a column, so MIN(depth) selects the shortest path [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "recursion depth is an ordinary column, so MIN(depth) or a window over it selects a shortest path [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
     "dbxdocs"
    ]
   },
@@ -481,7 +481,7 @@
    ],
    "Unity Catalog": [
     "Y",
-    "ordinary SQL predicates on event_time inside the recursion [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "ordinary SQL predicates on event_time inside the recursive step [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
     "dbxdocs"
    ]
   },
@@ -513,7 +513,7 @@
    ],
    "Unity Catalog": [
     "Y",
-    "NOT EXISTS against the materialised recursive result [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "the recursive CTE materialises a result set, so NOT EXISTS against it applies negation under the closure [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
     "dbxdocs"
    ]
   }
