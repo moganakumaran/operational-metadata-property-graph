@@ -1,0 +1,244 @@
+{
+ "engine": "kuzu 0.11.3",
+ "q4_paths": [
+  {
+   "from": "fx_rates",
+   "total_minutes": 36,
+   "hops": 3
+  },
+  {
+   "from": "fx_rates_smoothed",
+   "total_minutes": 16,
+   "hops": 2
+  },
+  {
+   "from": "orders_raw",
+   "total_minutes": 16,
+   "hops": 2
+  },
+  {
+   "from": "orders_clean",
+   "total_minutes": 4,
+   "hops": 1
+  }
+ ],
+ "node_counts": {
+  "Dataset": 5,
+  "SchemaVersion": 6,
+  "Field": 11,
+  "Pipeline": 5,
+  "Run": 5,
+  "QualityAssertion": 4,
+  "AssertionResult": 2,
+  "Consumer": 2,
+  "Principal": 2,
+  "SLA": 1,
+  "Incident": 1
+ },
+ "edge_counts": {
+  "reads": 4,
+  "writes": 5,
+  "declares": 13,
+  "instance_of": 5,
+  "produced": 2,
+  "evaluates": 2,
+  "asserts_on": 4,
+  "consumes": 2,
+  "owns": 10,
+  "governed_by": 1,
+  "affects": 1,
+  "has_schema": 6,
+  "derives_from": 6,
+  "feeds": 4
+ },
+ "queries": {
+  "Q1": {
+   "executable": true,
+   "matched_expected": true,
+   "rows": [
+    [
+     "pricing_service",
+     1,
+     "daily_revenue"
+    ],
+    [
+     "finance_dashboard",
+     3,
+     "daily_revenue"
+    ]
+   ],
+   "expected": [
+    [
+     "pricing_service",
+     1,
+     "daily_revenue"
+    ],
+    [
+     "finance_dashboard",
+     3,
+     "daily_revenue"
+    ]
+   ],
+   "capability": "transitive closure over typed edges",
+   "reading": "both consumers of daily_revenue are reachable downstream of orders_clean; pricing_service ranks first at criticality 1"
+  },
+  "Q2": {
+   "executable": true,
+   "matched_expected": true,
+   "rows": [
+    [
+     "orders_clean.amount_usd",
+     1
+    ],
+    [
+     "daily_revenue.revenue_usd",
+     2
+    ]
+   ],
+   "expected": [
+    [
+     "orders_clean.amount_usd",
+     1
+    ],
+    [
+     "daily_revenue.revenue_usd",
+     2
+    ]
+   ],
+   "capability": "column-level lineage closure with schema versioning",
+   "reading": "dropping orders_raw.currency breaks amount_usd at one hop through an INDIRECT/JOIN dependency it never projects, and revenue_usd at two hops; a projection-only or dataset-level analysis reports this change as safe"
+  },
+  "Q3": {
+   "executable": true,
+   "matched_expected": true,
+   "rows": [
+    [
+     "fx_rates",
+     "ingest_fx",
+     "r_ingest_fx_01",
+     "FAILED"
+    ],
+    [
+     "fx_rates_smoothed",
+     "smooth_fx",
+     "r_smooth_fx_01",
+     "SUCCESS"
+    ]
+   ],
+   "expected": [
+    [
+     "fx_rates",
+     "ingest_fx",
+     "r_ingest_fx_01",
+     "FAILED"
+    ],
+    [
+     "fx_rates_smoothed",
+     "smooth_fx",
+     "r_smooth_fx_01",
+     "SUCCESS"
+    ]
+   ],
+   "capability": "reverse traversal with a temporal predicate",
+   "reading": "two candidates in the 60-minute window before 02:14: a failed ingest run, and a run that succeeded but produced a failing assertion. The second is why AssertionResult and the evaluates edge have to exist"
+  },
+  "Q4": {
+   "executable": true,
+   "matched_expected": true,
+   "rows": [
+    [
+     "daily_revenue",
+     36,
+     30,
+     true
+    ]
+   ],
+   "expected": [
+    [
+     "daily_revenue",
+     36,
+     30,
+     true
+    ]
+   ],
+   "capability": "variable-length traversal + path-local aggregation + aggregation across paths",
+   "reading": "the slowest of three paths runs fx_rates -> fx_rates_smoothed -> orders_clean -> daily_revenue and accumulates 20+12+4 = 36 minutes, breaching the 30-minute SLA. The two shorter paths both total 16, so reachability or a per-dataset freshness value would not surface the breach"
+  },
+  "Q5": {
+   "executable": true,
+   "matched_expected": true,
+   "rows": [
+    [
+     "pricing_service",
+     1,
+     "orders_clean",
+     0,
+     "data_platform_team"
+    ]
+   ],
+   "expected": [
+    [
+     "pricing_service",
+     1,
+     "orders_clean",
+     0,
+     "data_platform_team"
+    ]
+   ],
+   "capability": "shortest-path selection with in-graph ownership",
+   "reading": "the most critical affected consumer is pricing_service; the nearest owned node on the shortest path from the incident is the incident dataset itself, owned by data_platform_team"
+  },
+  "Q6": {
+   "executable": true,
+   "matched_expected": true,
+   "rows": [
+    [
+     "orders_raw@v1",
+     false,
+     true
+    ],
+    [
+     "orders_raw@v2",
+     true,
+     false
+    ]
+   ],
+   "expected": [
+    [
+     "orders_raw@v1",
+     false,
+     true
+    ],
+    [
+     "orders_raw@v2",
+     true,
+     false
+    ]
+   ],
+   "capability": "two independent temporal dimensions on one edge",
+   "reading": "v2 was VALID at the 02:14 incident but was NOT yet believed by the catalog at 02:00, while v1 was believed at 02:00 but no longer valid. The two dimensions disagree, which is the case a single version history cannot represent"
+  },
+  "Q7": {
+   "executable": true,
+   "matched_expected": true,
+   "rows": [
+    [
+     "pricing_service",
+     1,
+     "fx_rates"
+    ]
+   ],
+   "expected": [
+    [
+     "pricing_service",
+     1,
+     "fx_rates"
+    ]
+   ],
+   "capability": "negation applied under a transitive closure",
+   "reading": "pricing_service is tier 1 and depends, three hops upstream, on fx_rates, which carries no assertion on the dataset or on any field of its currently valid schema"
+  }
+ },
+ "all_executable": true,
+ "all_matched": true
+}

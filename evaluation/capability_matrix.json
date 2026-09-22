@@ -1,0 +1,607 @@
+{
+ "_about": "Capability assessment, one record per cell, each with the evidence it rests on. The paper's Tables 4 and 5 are generated from this file by make_tables.py, so a cell cannot appear in the paper without an evidence string and a source. Assessed 2026-09-21. Citation keys are per-organisation; the specific source URL for each cell is appended to its reason, so consolidating the bibliography did not cost per-cell traceability.",
+ "rubric": {
+  "Y": "Native. The capability is available through a documented interface of the system as shipped, without reconstructing the graph outside it.",
+  "P": "Partial. Available only under a material qualification, which the cell's reason states: connector-specific, bounded, requires joining a separately-governed store, or semantically narrower than the workload needs.",
+  "N": "Absent. Not available through any documented or source-inspected interface examined.",
+  "-": "Not applicable. The artefact defines no layer of this kind (OpenLineage specifies data, not a query surface)."
+ },
+ "systems": {
+  "OpenLineage": {
+   "version": "spec, docs as of 2026-09-21",
+   "kind": "specification"
+  },
+  "Apache Atlas": {
+   "version": "master branch (post-2.5.0; 2.6.0-rc tagged)",
+   "kind": "open source"
+  },
+  "DataHub": {
+   "version": "docs.datahub.com, 2026-09-21",
+   "kind": "open source"
+  },
+  "OpenMetadata": {
+   "version": "1.12.x docs",
+   "kind": "open source"
+  },
+  "Egeria": {
+   "version": "egeria-project.org + odpi/egeria master",
+   "kind": "open source"
+  },
+  "Unity Catalog": {
+   "version": "Databricks docs 2026-09-21; recursive CTE requires DBR 17.0+",
+   "kind": "proprietary, openly documented"
+  }
+ },
+ "representation": {
+  "_caption": "Metadata representation: does the system record the fact the workload needs?",
+  "dataset lineage": {
+   "OpenLineage": [
+    "Y",
+    "Job/Run/Dataset with input/output datasets [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "Y",
+    "Process entities relate input to output DataSets [https://atlas.apache.org/2.0.0/TypeSystem.html]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "upstreamLineage aspect on Dataset [https://docs.datahub.com/docs/metadata-modeling/metadata-model]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "Y",
+    "lineage edge fromEntity/toEntity [https://openmetadatastandards.org/lineage/lineage/]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "DataFlow, ProcessCall, LineageMapping (models 0750/0770) [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "Y",
+    "system.access.table_lineage source/target_table_full_name [https://docs.databricks.com/aws/en/admin/system-tables/lineage]",
+    "dbxdocs"
+   ]
+  },
+  "field-level lineage": {
+   "OpenLineage": [
+    "Y",
+    "columnLineage facet, DIRECT/INDIRECT with subtypes JOIN, FILTER, WINDOW [https://openlineage.io/docs/spec/facets/dataset-facets/column_lineage_facet]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "P",
+    "ColumnLineageProcess arrives via the Hive bridge, not the core type system [https://atlas.apache.org/2.0.0/Hook-Hive.html]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "fineGrainedLineages within upstreamLineage [https://docs.datahub.com/docs/metadata-modeling/metadata-model]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "Y",
+    "columnsLineage with fromColumns, toColumn, function [https://openmetadatastandards.org/lineage/lineage/]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "DataMapping maps a schema attribute of one asset to another (model 0770) [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "P",
+    "column_lineage has source/target_column_name, but lineage is not preserved across renames and events without a source are excluded [https://docs.databricks.com/aws/en/data-governance/unity-catalog/data-lineage]",
+    "dbxdocs"
+   ]
+  },
+  "schema versions": {
+   "OpenLineage": [
+    "Y",
+    "schema and version dataset facets [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "P",
+    "entity audit events retain prior states; no first-class schema-version entity [https://atlas.apache.org/2.0.0/ClassificationPropagation.html]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "versioned aspects hold numbered history [https://docs.datahub.com/docs/metadata-modeling/metadata-model]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "Y",
+    "entity versioning major.minor; deleting a column is a major bump [https://docs.open-metadata.org/v1.12.x/connectors/ingestion/versioning]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "versioned instances with effectivity [https://github.com/odpi/egeria]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "N",
+    "information_schema.tables exposes LAST_ALTERED but no schema-version history [https://docs.databricks.com/aws/en/sql/language-manual/information-schema/tables]",
+    "dbxdocs"
+   ]
+  },
+  "run history": {
+   "OpenLineage": [
+    "Y",
+    "Run is a first-class entity with nominalTime and errorMessage facets [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "P",
+    "hive_process records a transformation, not individual executions [https://atlas.apache.org/2.0.0/TypeSystem.html]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "DataProcessInstance plus timeseries aspects [https://docs.datahub.com/docs/metadata-modeling/metadata-model]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "Y",
+    "pipeline status and run history [https://openmetadatastandards.org/lineage/lineage/]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "P",
+    "Engine Actions record governance-action executions, not arbitrary pipeline runs [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "P",
+    "system.lakeflow.job_run_timeline has period_start_time, period_end_time, result_state, but lives in a different schema and the docs define no join from it to lineage records [https://docs.databricks.com/aws/en/admin/system-tables/jobs]",
+    "dbxdocs"
+   ]
+  },
+  "quality assertions": {
+   "OpenLineage": [
+    "Y",
+    "dataQualityAssertions and dataQualityMetrics facets [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "N",
+    "no data-quality model in the type system [https://atlas.apache.org/2.0.0/TypeSystem.html]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "Assertion entity, six types including FRESHNESS, with assertionRunEvent [https://docs.datahub.com/docs/generated/metamodel/entities/assertion]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "Y",
+    "test cases and test results [https://docs.open-metadata.org/v1.12.x/connectors/ingestion/versioning]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "P",
+    "quality captured as discovery Annotations rather than declared assertions [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "N",
+    "no assertion model in Unity Catalog itself [https://docs.databricks.com/aws/en/admin/system-tables/lineage]",
+    "dbxdocs"
+   ]
+  },
+  "ownership": {
+   "OpenLineage": [
+    "N",
+    "no ownership in the specification [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "Y",
+    "Asset supertype carries owner [https://atlas.apache.org/2.0.0/TypeSystem.html]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "ownership aspect [https://docs.datahub.com/docs/metadata-modeling/metadata-model]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "Y",
+    "owner on entities [https://openmetadatastandards.org/lineage/lineage/]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "ownership in the governance model [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "Y",
+    "information_schema.tables.TABLE_OWNER [https://docs.databricks.com/aws/en/sql/language-manual/information-schema/tables]",
+    "dbxdocs"
+   ]
+  },
+  "per-hop latency": {
+   "OpenLineage": [
+    "N",
+    "run timing exists, but no latency attributed to a lineage edge [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "N",
+    "not modelled [https://atlas.apache.org/2.0.0/TypeSystem.html]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "N",
+    "FRESHNESS assertions are per dataset, not per edge [https://docs.datahub.com/docs/generated/metamodel/entities/assertion]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "N",
+    "not modelled [https://openmetadatastandards.org/lineage/lineage/]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "N",
+    "not modelled [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "N",
+    "lineage rows carry event_time, not a hop latency; run delay is in a separate schema [https://docs.databricks.com/aws/en/admin/system-tables/lineage]",
+    "dbxdocs"
+   ]
+  },
+  "valid time": {
+   "OpenLineage": [
+    "N",
+    "events are timestamped by emission; no validity interval [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "P",
+    "AtlasClassification declares validityPeriods, but AtlasRelationship carries no validity interval [https://github.com/apache/atlas]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "N",
+    "aspect versions record write order, not world validity [https://docs.datahub.com/docs/metadata-modeling/metadata-model]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "N",
+    "lineageDetails carries createdAt/updatedAt, no validity window [https://openmetadatastandards.org/lineage/lineage/]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "InstanceProperties declares effectiveFromTime and effectiveToTime, and Relationship carries InstanceProperties, so edges are validity-dated [https://github.com/odpi/egeria]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "N",
+    "no validity interval on lineage rows [https://docs.databricks.com/aws/en/admin/system-tables/lineage]",
+    "dbxdocs"
+   ]
+  },
+  "transaction time": {
+   "OpenLineage": [
+    "P",
+    "event emission time is recorded; retention is the consumer's concern [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "Y",
+    "AtlasRelationship carries createTime, updateTime and a monotonic version [https://github.com/apache/atlas]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "versioned aspects plus timeseries aspects with timestampMillis [https://docs.datahub.com/docs/metadata-modeling/metadata-model]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "Y",
+    "entity version history [https://docs.open-metadata.org/v1.12.x/connectors/ingestion/versioning]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "InstanceAuditHeader carries createTime, updateTime, version [https://github.com/odpi/egeria]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "P",
+    "event_time and event_date are recorded, but the lineage tables keep a rolling one-year window [https://docs.databricks.com/aws/en/admin/system-tables/lineage]",
+    "dbxdocs"
+   ]
+  }
+ },
+ "expressiveness": {
+  "_caption": "Query expressiveness: can the interface the system exposes state the operation?",
+  "transitive closure": {
+   "OpenLineage": [
+    "-",
+    "the specification defines no query layer [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "N",
+    "the current DSL grammar has no traversal production at all; Gremlin is used internally to execute DSL but is not exposed [https://github.com/apache/atlas]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "searchAcrossLineage and scrollAcrossLineage traverse multiple hops [https://docs.datahub.com/docs/graphql/queries]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "P",
+    "the lineage API expands to a requested depth; the search API cannot traverse [https://docs.open-metadata.org/latest/how-to-guides/data-discovery/advanced]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "UltimateSource and UltimateDestination materialise the closure as relationships [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "Y",
+    "WITH RECURSIVE over system.access.table_lineage; requires DBR 17.0+, default limit 100 levels [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "dbxdocs"
+   ]
+  },
+  "reverse traversal": {
+   "OpenLineage": [
+    "-",
+    "no query layer [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "N",
+    "no traversal production [https://github.com/apache/atlas]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "direction parameter on the lineage queries [https://docs.datahub.com/docs/graphql/queries]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "P",
+    "upstream expansion to a fixed depth [https://docs.open-metadata.org/latest/how-to-guides/data-discovery/advanced]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "UltimateSource is the upstream direction [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "Y",
+    "the recursion joins in either direction [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "dbxdocs"
+   ]
+  },
+  "path-local aggregation": {
+   "OpenLineage": [
+    "-",
+    "no query layer [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "N",
+    "DSL aggregates (COUNT, MAX, MIN, SUM) apply to a result set, with no path context [https://github.com/apache/atlas]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "N",
+    "lineage search returns reachable entities, with no per-path accumulator [https://docs.datahub.com/docs/graphql/queries]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "N",
+    "no path construct [https://docs.open-metadata.org/latest/how-to-guides/data-discovery/advanced]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "N",
+    "the closure is materialised as endpoints, so intermediate hops are not aggregable [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "Y",
+    "a recursive CTE carries a running accumulator down each branch, which is exactly a path-local fold [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "dbxdocs"
+   ]
+  },
+  "path selection": {
+   "OpenLineage": [
+    "-",
+    "no query layer [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "N",
+    "the loop and withPath clauses of the pre-1.0 DSL are absent from the current grammar [https://github.com/apache/atlas]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "N",
+    "per-hop limits bound the search but do not select among paths [https://docs.datahub.com/docs/graphql/queries]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "N",
+    "no path construct [https://docs.open-metadata.org/latest/how-to-guides/data-discovery/advanced]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "P",
+    "ultimate source or destination is a form of path endpoint selection, but no shortest-path predicate [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "Y",
+    "recursion depth is a column, so MIN(depth) selects the shortest path [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "dbxdocs"
+   ]
+  },
+  "temporal predicates": {
+   "OpenLineage": [
+    "-",
+    "no query layer [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "P",
+    "audit history is queryable, but not as a predicate inside a traversal [https://atlas.apache.org/2.0.0/ClassificationPropagation.html]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "Y",
+    "LineageFlags carries startTimeMillis and endTimeMillis [https://docs.datahub.com/docs/graphql/queries]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "P",
+    "attribute filters only [https://docs.open-metadata.org/latest/how-to-guides/data-discovery/advanced]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "Y",
+    "the effectiveTime retrieval parameter selects by validity [https://egeria-project.org/parameters/overview/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "Y",
+    "ordinary SQL predicates on event_time inside the recursion [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "dbxdocs"
+   ]
+  },
+  "negation under closure": {
+   "OpenLineage": [
+    "-",
+    "no query layer [https://openlineage.io/docs/spec/object-model]",
+    "olspec"
+   ],
+   "Apache Atlas": [
+    "N",
+    "no traversal for a predicate to range over [https://github.com/apache/atlas]",
+    "atlasdocs"
+   ],
+   "DataHub": [
+    "N",
+    "filters apply to the result set, not under the traversal [https://docs.datahub.com/docs/graphql/queries]",
+    "datahubdocs"
+   ],
+   "OpenMetadata": [
+    "P",
+    "genuine negation operators (Not in, Not contain) exist, but over attributes with no traversal to range over [https://docs.open-metadata.org/latest/how-to-guides/data-discovery/advanced]",
+    "omdocs"
+   ],
+   "Egeria": [
+    "N",
+    "no documented negation over a lineage closure [https://egeria-project.org/concepts/lineage/]",
+    "egeriadocs"
+   ],
+   "Unity Catalog": [
+    "Y",
+    "NOT EXISTS against the materialised recursive result [https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte]",
+    "dbxdocs"
+   ]
+  }
+ },
+ "requirements": {
+  "Q1": {
+   "label": "Downstream impact",
+   "representation": [
+    "dataset lineage",
+    "ownership"
+   ],
+   "expressiveness": [
+    "transitive closure"
+   ],
+   "model": "reads, writes, consumes; Consumer.criticality"
+  },
+  "Q2": {
+   "label": "Breaking change",
+   "representation": [
+    "field-level lineage",
+    "schema versions"
+   ],
+   "expressiveness": [
+    "transitive closure",
+    "reverse traversal"
+   ],
+   "model": "derives\\_from, has\\_schema, declares"
+  },
+  "Q3": {
+   "label": "Root-cause candidates",
+   "representation": [
+    "dataset lineage",
+    "run history",
+    "quality assertions"
+   ],
+   "expressiveness": [
+    "reverse traversal",
+    "temporal predicates"
+   ],
+   "model": "feeds (derived), instance\\_of, produced, evaluates"
+  },
+  "Q4": {
+   "label": "Freshness propagation",
+   "representation": [
+    "dataset lineage",
+    "per-hop latency"
+   ],
+   "expressiveness": [
+    "transitive closure",
+    "path-local aggregation"
+   ],
+   "model": "feeds (derived).latency\\_minutes, governed\\_by"
+  },
+  "Q5": {
+   "label": "Escalation routing",
+   "representation": [
+    "dataset lineage",
+    "ownership"
+   ],
+   "expressiveness": [
+    "transitive closure",
+    "path selection"
+   ],
+   "model": "feeds (derived), owns, consumes; Consumer.criticality"
+  },
+  "Q6": {
+   "label": "Change attribution",
+   "representation": [
+    "schema versions",
+    "valid time",
+    "transaction time"
+   ],
+   "expressiveness": [
+    "temporal predicates"
+   ],
+   "model": "has\\_schema with valid\\_from/to and recorded\\_from/to; affects"
+  },
+  "Q7": {
+   "label": "Coverage gaps",
+   "representation": [
+    "dataset lineage",
+    "quality assertions"
+   ],
+   "expressiveness": [
+    "transitive closure",
+    "negation under closure"
+   ],
+   "model": "feeds (derived), asserts\\_on, consumes"
+  }
+ }
+}

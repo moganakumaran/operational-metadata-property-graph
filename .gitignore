@@ -1,0 +1,34 @@
+# Build intermediates
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.toc
+*.synctex.gz
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Kuzu materialises a ~60 MB database file; run_validation.py rebuilds it from
+# schema.cypher + synthetic_data.cypher on every run, so it is never worth
+# committing.
+evaluation/.kuzu_db
+evaluation/.kuzu_db.*
+
+# Cached API responses from verify_refs.py. Regenerable, and caching upstream
+# metadata in the repo would let a stale copy outlive a correction.
+.refcache.json
+
+# Springer's call for papers is their document and carries no redistribution
+# licence. The URL is recorded in SCOPE.md instead.
+CFP_datenbank_spektrum.pdf
+
+# Only sn-basic.bst is used; the other eight styles ship with the Springer
+# template and are not needed to build this paper.
+bst/
+
+# macOS
+.DS_Store

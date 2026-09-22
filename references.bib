@@ -1,0 +1,282 @@
+% References for the Datenbank-Spektrum submission.
+%
+% Every non-web entry is verified by verify_refs.py against OpenAlex, then
+% Crossref. DBLP is unreachable from the build environment and is therefore
+% not used -- a lookup that returns nothing because the host is blocked looks
+% exactly like a reference that does not exist, which is the one failure this
+% check exists to prevent.
+%
+% The documentation sources are grouped into ONE entry per organisation rather
+% than one per page. That is a page-budget decision: as 22 separate entries
+% they cost a full page of a 10-page limit. No URL was dropped -- each entry's
+% note lists every page it covers. Per-cell evidence lives in
+% evaluation/capability_matrix.json, where each capability cell carries the
+% specific URL it rests on.
+
+@inproceedings{armbrust2021lakehouse,
+  author    = {Armbrust, Michael and Ghodsi, Ali and Xin, Reynold and
+               Zaharia, Matei},
+  title     = {Lakehouse: A New Generation of Open Platforms that Unify Data
+               Warehousing and Advanced Analytics},
+  booktitle = {CIDR},
+  year      = {2021}
+}
+
+@article{armbrust2020delta,
+  author  = {Armbrust, Michael and Das, Tathagata and Sun, Liwen and
+             Yavuz, Burak and Zhu, Shixiong and Murthy, Mukul and
+             Torres, Joseph and van Hovell, Herman and Ionescu, Adrian and
+             {\L}uszczak, Alicja and undefined, others},
+  title   = {Delta Lake: High-Performance {ACID} Table Storage over Cloud
+             Object Stores},
+  journal = {Proc. VLDB Endow.},
+  volume  = {13},
+  number  = {12},
+  pages   = {3411--3424},
+  year    = {2020},
+  doi     = {10.14778/3415478.3415560}
+}
+
+@inproceedings{green2007semirings,
+  author    = {Green, Todd J. and Karvounarakis, Grigoris and Tannen, Val},
+  title     = {Provenance Semirings},
+  booktitle = {PODS},
+  year      = {2007}
+}
+
+@inproceedings{amsterdamer2011aggregate,
+  author    = {Amsterdamer, Yael and Deutch, Daniel and Tannen, Val},
+  title     = {Provenance for Aggregate Queries},
+  booktitle = {PODS},
+  year      = {2011}
+}
+
+@article{cheney2009provenance,
+  author  = {Cheney, James and Chiticariu, Laura and Tan, Wang Chiew},
+  title   = {Provenance in Databases: Why, How, and Where},
+  journal = {Found. Trends Databases},
+  volume  = {1},
+  number  = {4},
+  year    = {2009}
+}
+
+@inproceedings{buneman2001whywhere,
+  author    = {Buneman, Peter and Khanna, Sanjeev and Tan, Wang Chiew},
+  title     = {Why and Where: A Characterization of Data Provenance},
+  booktitle = {ICDT},
+  year      = {2001}
+}
+
+@article{herschel2017survey,
+  author  = {Herschel, Melanie and Diestelk{\"a}mper, Ralf and
+             Ben Lahmar, Houssem},
+  title   = {A survey on provenance: What for? What form? What from?},
+  journal = {VLDB J.},
+  volume  = {26},
+  number  = {6},
+  year    = {2017}
+}
+
+@article{angles2017foundations,
+  author  = {Angles, Renzo and Arenas, Marcelo and Barcel{\'o}, Pablo and
+             Hogan, Aidan and Reutter, Juan L. and Vrgoc, Domagoj},
+  title   = {Foundations of Modern Query Languages for Graph Databases},
+  journal = {ACM Comput. Surv.},
+  volume  = {50},
+  number  = {5},
+  year    = {2017}
+}
+
+@inproceedings{francis2018cypher,
+  author    = {Francis, Nadime and Green, Alastair and Guagliardo, Paolo and
+               Libkin, Leonid and Lindaaker, Tobias and Marsault, Victor and
+               Plantikow, Stefan and Rydberg, Mats and Selmer, Petra and
+               Taylor, Andr{\'e}s},
+  title     = {Cypher: An Evolving Query Language for Property Graphs},
+  booktitle = {SIGMOD},
+  pages     = {1433--1445},
+  year      = {2018},
+  doi       = {10.1145/3183713.3190657}
+}
+
+@inproceedings{deutsch2022gql,
+  author    = {Deutsch, Alin and Francis, Nadime and Green, Alastair and
+               Hare, Keith and Li, Bei and Libkin, Leonid and
+               Lindaaker, Tobias and Marsault, Victor and Martens, Wim and
+               Michels, Jan and others},
+  title     = {Graph Pattern Matching in {GQL} and {SQL/PGQ}},
+  booktitle = {SIGMOD},
+  year      = {2022}
+}
+
+@article{debrouvier2021temporal,
+  author  = {Debrouvier, Ariel and Parodi, Eliseo and Perazzo, Matias and
+             Soliani, Valeria and Vaisman, Alejandro A.},
+  title   = {A model and query language for temporal graph databases},
+  journal = {VLDB J.},
+  volume  = {30},
+  number  = {5},
+  year    = {2021}
+}
+
+@article{rost2021gradoop,
+  author  = {Rost, Christopher and Gomez, Kevin and T{\"a}schner, Matthias and
+             Fritzsche, Philip and Schons, Lucas and Christ, Lukas and
+             Adameit, Timo and Junghanns, Martin and Rahm, Erhard},
+  title   = {Distributed temporal graph analytics with {GRADOOP}},
+  journal = {VLDB J.},
+  volume  = {31},
+  number  = {2},
+  pages   = {375--401},
+  year    = {2021},
+  doi     = {10.1007/s00778-021-00667-4}
+}
+
+@article{kulkarni2012temporal,
+  author  = {Kulkarni, Krishna G. and Michels, Jan{-}Eike},
+  title   = {Temporal features in {SQL:2011}},
+  journal = {SIGMOD Rec.},
+  volume  = {41},
+  number  = {3},
+  year    = {2012}
+}
+
+@inproceedings{halevy2016goods,
+  author    = {Halevy, Alon Y. and Korn, Flip and Noy, Natalya F. and
+               Olston, Christopher and Polyzotis, Neoklis and
+               Roy, Sudip and Whang, Steven Euijong},
+  title     = {Goods: Organizing Google's Datasets},
+  booktitle = {SIGMOD},
+  pages     = {795--806},
+  year      = {2016},
+  doi       = {10.1145/2882903.2903730}
+}
+
+@inproceedings{hellerstein2017ground,
+  author    = {Hellerstein, Joseph M. and Sreekanti, Vikram and
+               Gonzalez, Joseph E. and Dalton, James and Dey, Akon and
+               Nag, Sreyashi and Ramachandran, Krishna and Arora, Sudhanshu and
+               Bhattacharyya, Arka and Das, Shirshanka},
+  title     = {Ground: A Data Context Service},
+  booktitle = {CIDR},
+  year      = {2017}
+}
+
+@article{schelter2018deequ,
+  author  = {Schelter, Sebastian and Lange, Dustin and Schmidt, Philipp and
+             Celikel, Meltem and Bie{\ss}mann, Felix and Grafberger, Andreas},
+  title   = {Automating Large-Scale Data Quality Verification},
+  journal = {Proc. VLDB Endow.},
+  volume  = {11},
+  number  = {12},
+  year    = {2018}
+}
+
+@inproceedings{breck2019validation,
+  author    = {Breck, Eric and Polyzotis, Neoklis and Roy, Sudip and
+               Whang, Steven Euijong and Zinkevich, Martin},
+  title     = {Data Validation for Machine Learning},
+  booktitle = {MLSys},
+  year      = {2019}
+}
+
+@inproceedings{polyzotis2017challenges,
+  author    = {Polyzotis, Neoklis and Roy, Sudip and Whang, Steven Euijong and
+               Zinkevich, Martin},
+  title     = {Data Management Challenges in Production Machine Learning},
+  booktitle = {SIGMOD},
+  year      = {2017}
+}
+
+@inproceedings{scherzinger2013nosql,
+  author    = {Scherzinger, Stefanie and Klettke, Meike and St{\"o}rl, Uta},
+  title     = {Managing Schema Evolution in {NoSQL} Data Stores},
+  booktitle = {DBPL},
+  year      = {2013}
+}
+
+@inproceedings{klettke2015schema,
+  author    = {Klettke, Meike and St{\"o}rl, Uta and Scherzinger, Stefanie},
+  title     = {Schema Extraction and Structural Outlier Detection for
+               JSON-based {NoSQL} Data Stores},
+  booktitle = {BTW},
+  year      = {2015}
+}
+
+@inproceedings{klettke2016migration,
+  author    = {Klettke, Meike and St{\"o}rl, Uta and Shenavai, Manuel and
+               Scherzinger, Stefanie},
+  title     = {{NoSQL} schema evolution and big data migration at scale},
+  booktitle = {IEEE BigData},
+  pages     = {2764--2774},
+  year      = {2016},
+  doi       = {10.1109/BigData.2016.7840924}
+}
+
+@inproceedings{acosta2013crowdsourcing,
+  author    = {Acosta, Maribel and Zaveri, Amrapali and Simperl, Elena and
+               Kontokostas, Dimitris and Auer, S{\"o}ren and Lehmann, Jens},
+  title     = {Crowdsourcing Linked Data Quality Assessment},
+  booktitle = {ISWC},
+  year      = {2013}
+}
+
+@article{hogan2021knowledge,
+  author  = {Hogan, Aidan and Blomqvist, Eva and Cochez, Michael and
+             d'Amato, Claudia and de Melo, Gerard and Gutierrez, Claudio and
+             Kirrane, Sabrina and Labra Gayo, Jose Emilio and
+             Navigli, Roberto and Neumaier, Sebastian},
+  title   = {Knowledge Graphs},
+  journal = {ACM Comput. Surv.},
+  volume  = {54},
+  number  = {4},
+  year    = {2021}
+}
+
+@misc{olspec,
+  author = {{OpenLineage Project}},
+  key    = {olspec},
+  title  = {OpenLineage specification},
+  note   = {\emph{OpenLineage Object Model and Dataset Facets}, \url{https://openlineage.io/docs/spec/object-model}; \emph{Column Lineage Dataset Facet}, \url{https://openlineage.io/docs/spec/facets/dataset-facets/column_lineage_facet}. All accessed or inspected 21 September 2026},
+  year   = {2026}
+}
+
+@misc{atlasdocs,
+  author = {{Apache Software Foundation}},
+  key    = {atlasdocs},
+  title  = {Apache Atlas documentation and source},
+  note   = {\emph{Apache Atlas Type System}, \url{https://atlas.apache.org/2.0.0/TypeSystem.html}; \emph{Apache Atlas DSL Advanced Search}, \url{https://atlas.apache.org/2.0.0/Search-Advanced.html}; \emph{Apache Atlas Hook and Bridge for Apache Hive}, \url{https://atlas.apache.org/2.0.0/Hook-Hive.html}; \emph{Apache Atlas Classification Propagation and Entity Audit}, \url{https://atlas.apache.org/2.0.0/ClassificationPropagation.html}; \emph{Apache Atlas source: AtlasDSLParser.g4 and AtlasDSLLexer.g4, master branch}, \url{https://github.com/apache/atlas}; \emph{Apache Atlas source: AtlasRelationship and AtlasClassification}, \url{https://github.com/apache/atlas}. All accessed or inspected 21 September 2026},
+  year   = {2026}
+}
+
+@misc{datahubdocs,
+  author = {{DataHub Project}},
+  key    = {datahubdocs},
+  title  = {DataHub documentation},
+  note   = {\emph{The DataHub Metadata Model}, \url{https://docs.datahub.com/docs/metadata-modeling/metadata-model}; \emph{DataHub Assertion Entity}, \url{https://docs.datahub.com/docs/generated/metamodel/entities/assertion}; \emph{DataHub GraphQL Queries: searchAcrossLineage}, \url{https://docs.datahub.com/docs/graphql/queries}. All accessed or inspected 21 September 2026},
+  year   = {2026}
+}
+
+@misc{omdocs,
+  author = {{OpenMetadata Project}},
+  key    = {omdocs},
+  title  = {OpenMetadata documentation},
+  note   = {\emph{OpenMetadata Lineage Standard}, \url{https://openmetadatastandards.org/lineage/lineage/}; \emph{OpenMetadata Metadata Versioning}, \url{https://docs.open-metadata.org/v1.12.x/connectors/ingestion/versioning}; \emph{OpenMetadata Advanced Search}, \url{https://docs.open-metadata.org/latest/how-to-guides/data-discovery/advanced}. All accessed or inspected 21 September 2026},
+  year   = {2026}
+}
+
+@misc{egeriadocs,
+  author = {{LF AI \& Data Foundation}},
+  key    = {egeriadocs},
+  title  = {Egeria documentation and source},
+  note   = {\emph{Egeria Lineage Concepts and Open Metadata Types}, \url{https://egeria-project.org/concepts/lineage/}; \emph{Egeria Effectivity Dates}, \url{https://egeria-project.org/parameters/overview/}; \emph{Egeria source: InstanceProperties}, \url{https://github.com/odpi/egeria}. All accessed or inspected 21 September 2026},
+  year   = {2026}
+}
+
+@misc{dbxdocs,
+  author = {{Databricks}},
+  key    = {dbxdocs},
+  title  = {Databricks and Unity Catalog documentation},
+  note   = {\emph{Unity Catalog Data Lineage}, \url{https://docs.databricks.com/aws/en/data-governance/unity-catalog/data-lineage}; \emph{Lineage System Tables Reference: system.access.table\_lineage and system.access.column\_lineage}, \url{https://docs.databricks.com/aws/en/admin/system-tables/lineage}; \emph{Common Table Expressions: WITH RECURSIVE}, \url{https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-qry-select-cte}; \emph{Jobs System Tables Reference: system.lakeflow.job\_run\_timeline}, \url{https://docs.databricks.com/aws/en/admin/system-tables/jobs}; \emph{INFORMATION\_SCHEMA.TABLES}, \url{https://docs.databricks.com/aws/en/sql/language-manual/information-schema/tables}. All accessed or inspected 21 September 2026},
+  year   = {2026}
+}
