@@ -107,11 +107,13 @@ silently or loudly against the new front matter:
 4. **Upload source with the PDF**: `paper.tex` and `references.bib`. Nothing
    else is needed — `IEEEtran.cls` and `IEEEtran.bst` are on CTAN and on
    Overleaf, so no class file travels with the submission.
-5. **Flip the artefact repo public** if it is to be cited:
-   `gh repo edit moganakumaran/operational-metadata-property-graph
-   --visibility public`. It is private now because the paper is unsubmitted.
-   The `\thanks` footnote currently says the artefact is "released with this
-   paper" without giving a URL; add the URL once the repo is public.
+5. **The artefact repo is public** (26 September 2026) at
+   `github.com/moganakumaran/operational-metadata-property-graph`, and the
+   `\thanks` footnote carries that URL. If the chosen venue is double-blind
+   this is a de-anonymisation risk: `make_anon.py` strips the whole `\author`
+   span, footnote included, and both `github.com/moganakumaran` and
+   `operational-metadata-property-graph` are in its `FORBIDDEN` scan, so the
+   blinded build is covered — but submit `paper_anon.pdf`, not `paper.pdf`.
 
 ## Files
 
