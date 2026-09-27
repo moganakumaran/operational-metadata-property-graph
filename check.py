@@ -6,22 +6,24 @@ this paper:
 
   compile      tectonic must finish with no errors
   citations    the PDF must contain no "[?]" -- bibtex silently produced an
-               empty bibliography when sn-basic.bst was not beside paper.tex,
-               and the compile still "succeeded"
+               empty bibliography when the .bst was not resolvable, and the
+               compile still "succeeded"
   overfull     a table wider than its column, and a TikZ figure that resized
                past \\textwidth
-  pages        8-10 required by the CfP, measured on the PDF
+  pages        10-12, the target for this IEEE build, measured on the PDF
   model        endpoint-level figure/table/schema agreement, and no model
                element left unexercised by any query
   anon         paper_anon.tex is current, and neither it nor its PDF carries
                an identifying string
-  abstract     150-250 words, which Springer's DASP guidelines require
-  declarations Competing Interests, Funding and Data Availability must all
-               appear -- the guidelines say a submission without the relevant
-               declarations "will be returned as incomplete"
-  dois         the guidelines say to "always include DOIs as full DOI links";
-               sn-basic.bst already renders the link, so this gates coverage,
-               with a named exception per venue that registers no DOIs
+  abstract     150-250 words. IEEE sets no limit; the bound is kept because it
+               is the range that reads well in a two-column abstract block and
+               a silent doubling of it would otherwise go unnoticed
+  artefact     the availability footnote must survive into the rendered PDF --
+               it replaced the Springer Declarations section and lives in a
+               \\thanks, which is easy to lose in an author-block edit
+  dois         IEEEtran.bst does not print DOIs, so this gates the `doi` field
+               being present in the .bib -- the record readers follow to the
+               source -- with a named exception per venue that registers none
   refs         verify_refs.py: every reference confirmed against a live index
   independence 8-gram similarity against the author's prior papers, which the
                venue plan requires to be near zero
@@ -43,12 +45,9 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 PAPER = os.path.join(HERE, "paper.tex")
 PDF = os.path.join(HERE, "paper.pdf")
-# The CfP's actual requirement. The gate encodes the venue's rule rather than
-# the paper's current state, so a remaining gap stays visible instead of being
-# widened away. A lower bound is included so that silently losing a section
-# fails too.
-MIN_PAGES, MAX_PAGES = 8, 10
-# Springer DASP: "The abstract should be 150 to 250 words."
+# The target band for this IEEE conference build. A lower bound is included so
+# that silently losing a section fails too.
+MIN_PAGES, MAX_PAGES = 10, 12
 MIN_ABSTRACT, MAX_ABSTRACT = 150, 250
 # Scholarly references legitimately without a DOI, each because the venue
 # registers none. Named individually so that a NEW reference without a DOI
@@ -163,40 +162,32 @@ def main() -> int:
                         not anon_errs and os.path.exists(anon_pdf) and leak == 0,
                         f"{leak} identifying string(s)" if leak else ""))
 
-    # Springer requires a 150-250 word abstract. Counted from the source so
-    # the failure names a number to cut to, not just "too long".
+    # Abstract length. Counted from the source so the failure names a number
+    # to cut to, not just "too long". IEEEtran uses an environment where the
+    # Springer class used a \abstract{...} command.
     tex = open(PAPER, encoding="utf-8").read()
-    i = tex.index(r"\abstract{")
-    depth = 0
-    for k in range(i + len(r"\abstract"), len(tex)):
-        depth += (tex[k] == "{") - (tex[k] == "}")
-        if depth == 0:
-            abs_end = k
-            break
-    body = tex[i + len(r"\abstract") + 1:abs_end]
+    i = tex.index(r"\begin{abstract}") + len(r"\begin{abstract}")
+    abs_end = tex.index(r"\end{abstract}")
+    body = tex[i:abs_end]
     body = re.sub(r"\\[a-zA-Z]+\*?", "", body)
     body = re.sub(r"[{}~$\\]", " ", body)
     n_abs = len([w for w in body.split() if re.search(r"[A-Za-z0-9]", w)])
     results.append(gate(f"abstract in [{MIN_ABSTRACT},{MAX_ABSTRACT}] words",
                         MIN_ABSTRACT <= n_abs <= MAX_ABSTRACT, f"{n_abs} words"))
 
-    # "Submissions that do not include relevant declarations will be returned
-    # as incomplete." Checked on the rendered text, not the source, because
-    # what matters is that an editor can see them.
-    # The three declaration names are what carry this gate. Negative-testing
-    # showed why both halves of that sentence matter: checking only for
-    # "competing interests" passes on the sentence *body* of the declaration
-    # rather than its heading, while "Declarations" alone passes on Sect. 8's
-    # cross-reference to it even with the whole section deleted.
-    required = ("Declarations", "Competing interests", "Funding",
-                "Data availability")
+    # The Springer Declarations section is gone; what replaced it is a \thanks
+    # footnote on the author block carrying artefact availability and the
+    # synthetic-data statement. Checked on the rendered text, not the source,
+    # because a \thanks that fails to typeset still compiles cleanly.
+    required = ("released with this paper", "The running example is synthetic")
     missing = [d for d in required if d.lower() not in txt.lower()]
-    results.append(gate("declarations present in the PDF", not missing,
+    results.append(gate("artefact availability footnote in the PDF",
+                        not missing,
                         f"missing: {', '.join(missing)}" if missing else
-                        ", ".join(required)))
+                        "availability and synthetic-data statement present"))
 
-    # DOI coverage. sn-basic.bst renders `doi` as a full https://doi.org link,
-    # so this gates the field being there at all.
+    # DOI coverage. IEEEtran.bst does not print DOIs, so this gates the field
+    # being present in the .bib rather than its appearance in the PDF.
     from verify_refs import parse_bib
     scholarly = [e for e in parse_bib(os.path.join(HERE, "references.bib"))
                  if e["kind"] != "misc"]

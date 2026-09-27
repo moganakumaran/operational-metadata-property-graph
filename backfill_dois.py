@@ -1,8 +1,8 @@
 """Find a DOI for every scholarly reference that lacks one, and refuse to guess.
 
-Springer's Datenbank-Spektrum guidelines say to "always include DOIs as full
-DOI links". `sn-basic.bst` already renders a `doi` field as
-https://doi.org/... , so the format is right and only the coverage is short.
+A DOI is the record a reader follows to the source, so every scholarly entry
+should carry one. `IEEEtran.bst` does not print it, but `check.py` gates the
+field's presence in the .bib and this script is how that gap gets filled.
 
 Filling that gap by taking Crossref's top hit is exactly how this project
 previously acquired two *wrong* bibliography entries: a search for Klettke's

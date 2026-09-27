@@ -1,22 +1,42 @@
 # Template provenance
 
-`sn-jnl.cls` and `bst/` are vendored here because the class is **not on CTAN**
-and **not in tectonic's package bundle**, so the build cannot fetch it.
+The paper builds with `\documentclass[conference]{IEEEtran}`.
+
+Nothing is vendored. `IEEEtran.cls` and `IEEEtran.bst` are on CTAN and ship
+with every TeX Live / MacTeX distribution, and tectonic pulls them from its
+TeX Live bundle on first build, so the repository carries no class or style
+file and no third-party redistribution question arises.
 
 | | |
 |---|---|
-| Source | Springer Nature official LaTeX template |
-| Landing page | https://www.springernature.com/gp/authors/campaigns/latex-author-support |
-| Direct zip | https://cms-resources.apps.public.k8s.springernature.io/springer-cms/rest/v1/content/18782940/data/v12 |
-| Version | 3.1, December 2024 (per header of `sn-article.tex`) |
-| Retrieved | 21 September 2026 |
-| sha256 (zip) | see below |
+| Class | `IEEEtran`, option `conference` |
+| Bibliography | `IEEEtran.bst`, via `\bibliographystyle{IEEEtran}` |
+| Source | CTAN, fetched by tectonic from its TeX Live bundle |
+| Engine | tectonic (`tectonic -X compile paper.tex`) |
 
-Not vendored: `sn-article.tex` (the demo), `fig.eps`, `empty.eps`,
-`sn-bibliography.bib`, `user-manual.pdf`. Only the class and the bibliography
-styles are needed to build.
+## Two things the class needed help with
 
-Class options used: `[pdflatex,sn-basic,Numbered]`. `sn-basic` alone defaults to
-author-year and then rejects a numbered bibliography.
+Both were found by rendering the PDF, not by reading the log, and both are set
+in the preamble with a comment saying why:
 
-`812e76dcaa9c28dc1bff1fb6065d51729b67d4ea140552a05088317414a3ecae`
+- **Fonts.** IEEEtran asks for Times (`ptm`) shapes that are not set up under
+  the Unicode encoding tectonic's engine uses. The result is not an error:
+  every bold and small-caps run silently falls back to the default family, so
+  `\textbf` produces no bold at all. `newtxtext`/`newtxmath` supply the shapes.
+  They must load **after** `amssymb` with `\let\Bbbk\relax`, because both
+  packages define that symbol and the clash is an error rather than a warning.
+
+- **Table captions.** IEEEtran sets them in small caps above the table, where
+  anything longer than a line is unreadable. The two long captions inherited
+  from the Springer build were cut to a title, and their detail moved to a
+  `\scriptsize` note under the bottom rule. `make_tables.py` emits generated
+  tables in the same shape (`note_block()`).
+
+## Previous template
+
+Before this build the manuscript targeted *Datenbank-Spektrum* and used
+Springer Nature's `sn-jnl.cls` with the `[iicol]` option, vendored here with a
+checksum because it is not on CTAN and not in tectonic's bundle. That build,
+`sn-jnl.cls`, `sn-basic.bst` and the `bst/` style directory are on the `main`
+branch of this repository and were removed when the paper moved to IEEE
+format.

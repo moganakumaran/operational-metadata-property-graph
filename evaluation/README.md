@@ -1,7 +1,7 @@
 # Reference implementation and capability assessment
 
 Artefact for *Operational Metadata as a Property Graph: A Reference Model and
-Query Workload for Lakehouse Reliability*.
+Query Workload for Data Platform Reliability*.
 
 Two independent things live here:
 
@@ -126,11 +126,11 @@ python3 make_tables.py          # rewrite the tables inside ../paper.tex
 python3 make_tables.py --check  # fail if they are stale
 ```
 
-The paper carries one generated table; three more are emitted to
-`SUPPLEMENTARY.md` instead, which is how the manuscript fits its page budget
-without losing the evidence.
+The paper carries all four generated tables. `SUPPLEMENTARY.md` keeps only the
+per-query prose readings of the validation results, which are commentary rather
+than evidence.
 
-Springer requires a single `.tex`, so the tables cannot be `\input`. They are
+The manuscript is a single `.tex`, so the tables cannot be `\input`. They are
 spliced between `% BEGIN GENERATED <name>` / `% END GENERATED <name>` markers
 instead, which keeps `paper.tex` self-contained while keeping every capability
 claim generated from `capability_matrix.json` rather than transcribed. Editing

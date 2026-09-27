@@ -22,13 +22,10 @@ evaluation/.kuzu_db.*
 # metadata in the repo would let a stale copy outlive a correction.
 .refcache.json
 
-# Springer's call for papers is their document and carries no redistribution
-# licence. The URL is recorded in SCOPE.md instead.
+# The call for papers of the venue this manuscript was first written for is
+# Springer's document and carries no redistribution licence. The URL is
+# recorded in SCOPE.md instead.
 CFP_datenbank_spektrum.pdf
-
-# Only sn-basic.bst is used; the other eight styles ship with the Springer
-# template and are not needed to build this paper.
-bst/
 
 # macOS
 .DS_Store

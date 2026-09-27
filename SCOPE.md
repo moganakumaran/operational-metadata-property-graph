@@ -1,44 +1,24 @@
-# Scope: Datenbank-Spektrum special issue
+# Scope
+
+> **Venue changed, 26 September 2026.** The paper now targets an **IEEE
+> conference** (`IEEEtran`, `conference` option, two-column US Letter, target
+> 10--12 pages) and the Datenbank-Spektrum submission is abandoned. Everything
+> below the "Toolchain" heading was written for that earlier venue and is kept
+> as the record of why the paper is shaped the way it is; the facts in it about
+> Springer's template, `[iicol]`, the 8--10 page limit, the 1 October deadline
+> and the Editorial Manager portal **no longer apply**.
 
 ## Venue facts
 
 | | |
 |---|---|
-| Journal | *Datenbank-Spektrum* (Springer; GI DBIS/IR journal; DBLP-indexed) |
-| Special issue | New Trends in Data Management for Property Graphs and Knowledge Graphs |
-| Category | **Schwerpunktbeitrag** (must be selected in Editorial Manager) |
-| Length | 8–10 pages, double column — **submitted** in `sn-jnl` `[iicol]` |
-| Deadline | **1 October 2026** (today: 21 September 2026) |
-| Portal | editorialmanager.com/dasp |
-| Publication | March 2027 |
-| Guest editors | Maribel Acosta (TUM), Meike Klettke (Regensburg) |
+| Format | IEEE conference, `\documentclass[conference]{IEEEtran}` |
+| Length | 10--12 pages, two column, US Letter |
+| Bibliography | `IEEEtran.bst`, numeric |
+| Blinding | `paper_anon.pdf` is generated and clean; whether it is needed depends on the venue chosen |
+| Engine | tectonic; `IEEEtran` is fetched from CTAN, nothing vendored |
 
-### Format finding (verified against primary sources, 21 Sep 2026)
-
-The CfP says "8–10 pages, double-column format (refer to Springer author
-guidelines)". Springer's Datenbank-Spektrum submission guidelines resolve what
-that means: use the **Springer Nature LaTeX template with the formatting option
-`[iicol]`**. So the submission itself is two-column, and **page count in our own
-build is the binding constraint** — not a proxy for it.
-
-`[iicol]` is confirmed present in `sn-jnl.cls` (it is one of 22 declared class
-options). Measured calibration with realistic prose in that layout:
-
-> **~750 words per full page of body text.**
-
-Budget for a 10-page limit, aiming at **9 pages** to leave headroom:
-
-| | pages |
-|---|---|
-| Title block, abstract, keywords | 0.4 |
-| 7 floats at ~0.4 page each | 2.8 |
-| References (~35 entries) | 0.7 |
-| **Left for prose** | **~5.1 → ~3,800–4,200 words** |
-
-This is roughly **35% tighter than a first estimate** that assumed the Springer
-author template was single-column and the page limit applied only to the
-published version. It does not. Scope accordingly: this is a compact paper, and
-the float budget is the first thing to defend.
+## Previous venue (superseded)
 
 ### Toolchain, verified 21 Sep 2026
 
@@ -83,7 +63,7 @@ letter should name the CfP explicitly.
 ## The paper
 
 **Operational Metadata as a Property Graph: A Reference Model and Query
-Workload for Lakehouse Reliability**
+Workload for Data Platform Reliability**
 
 Thesis: the questions reliability engineers ask of a lakehouse — what breaks if
 this changes, why is this table stale, who do I page — are *graph traversals*.
@@ -194,8 +174,8 @@ part that keeps the paper honest about having no evaluation.
 
 ## Verification
 
-- **Page count 8–10 under `[iicol]`**, asserted by a build check on the
-  compiled PDF. Target 9, so a late addition does not blow the limit.
+- **Page count 10–12 under `IEEEtran [conference]`**, asserted by a build
+  check on the compiled PDF.
 - Compiles clean under tectonic: no errors, no undefined citations or refs.
 - Every gap-analysis cell cited to a primary source; unverified cells marked.
 - References verified against live APIs (Crossref/DBLP), as on DARE.
